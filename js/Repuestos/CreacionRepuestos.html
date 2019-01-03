@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+	<script src="../js/jquery-1.11.3.min.js"></script>
+	<script src="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+    <link rel="stylesheet" href="../css/themes/amovil.css" />
+
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script src="../url.js" type="text/javascript"></script>
+    <script src="repuestos.js" type="text/javascript"></script>
+    <title>Amovil</title>
+
+    <script type="text/javascript">
+		$.support.cors                 = true;
+		$.mobile.allowCrossDomainPages = true;
+		$.mobile.pushStateEnabled      = false;
+
+		$(document).on('pageinit','#crearRepuestos', function(){ 
+			window.isphone = false;
+		    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+		    if(window.isphone) {
+        		document.addEventListener("deviceready", onDeviceReady, false);
+		    	document.addEventListener("deviceready", cargarAlmacenes, false);
+	    	} else {
+    			onDeviceReady();
+	    		cargarAlmacenes();
+		    }
+   		});  
+
+   		//**************** ALMACENES ****************************************//
+		function cargarAlmacenes() {
+		  var parametro = localStorage.compania;
+		  $.ajax({
+		    type       : 'GET',
+		    url        : uri + '/almacen/' + parametro,
+		    crossDomain: true,
+		    beforeSend : function() {$.mobile.loading('show')},
+		    complete   : function() {$.mobile.loading('hide')},
+		    dataType   : 'json',
+		    success    : function(response) {
+		                  $.each(response, function (key, item) {
+		                    $('<option>', { text: item.NomAL, value: item.ideAl}).appendTo($('#almacen'));
+		                  });
+		                  $('#almacen').selectmenu("refresh", true);
+		                },
+		    error      : function(xhr, ajaxOptions, thrownError) {
+		                  $('<option>', { text: 'no se encuentra ningun almacen', value: '0' }).appendTo($('#almacen'));
+		                  $('#almacen').selectmenu("refresh", true);
+		                }
+		  });
+		}
+
+
+
+      	function guardar() {
+  			checkConnection();
+	    	var ajax_data = { "IdeALRP": 	$('#almacen').val(), 		"IdeRP": 	  	$('#rp').val(),
+	                          "DesRP":     	$('#descripcion').val(),   	"EstadoRP":     $('#EstadoRP').val(),
+	                          "InvActualRP":$('#InvActualRP').val(), 	"VrUnitarioRP": $('#VrUnitarioRP').val(),
+	                          "IdeCYALRP":  localStorage.compania
+ 							};
+            $.ajax({
+	            type       : 'POST',
+	            url        : uri + '/repuesto',
+	            crossDomain: true,
+	            contentType:"application/json",
+	            beforeSend : function() {$.mobile.loading('show')},
+	            complete   : function() {$.mobile.loading('hide')},
+	            data       : JSON.stringify(ajax_data),
+	            success    : function(response) {
+	                            if (response == '1'){alert('Repuesto insertado correctamente');}else{alert('Error: ' + response);}
+	                        },
+	            error      : function(xhr, ajaxOptions, thrownError) {
+							  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                        	}
+	        });
+        }                  
+	</script>
+</head>
+<body>
+	<div data-role="page" data-mini="true" id="crearRepuestos">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href='#' data-rel="back" class="back-btn" data-role='button' data-icon="back" data-iconpos='notext'></a>
+			<h1>Creaci&oacute;n Repuestos</h1>
+		</div>
+		<div data-role="content">
+			<ul data-role="listview" data-inset="true">
+				<li data-role="fieldcontain">
+					<label for="almacen"><strong>Almac&eacute;n</strong></label>
+  					<select name="almacen" id="almacen"></select>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="rp"><strong>Repuesto</strong></label>
+					<input type="text" name="rp" id="rp" data-clear-btn="true" placeholder="Repuesto"/>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="descripcion"><strong>Descripci&oacute;n</strong></label>
+					<input type="text" name="descripcion" id="descripcion" data-clear-btn="true" placeholder="Descripci&oacute;n"/>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="EstadoRP"><strong>Estado</strong></label>
+					<select name="EstadoRP" id="EstadoRP">
+						<option selected value="1">Activo</option>
+						<option value="2">Vencido</option>
+						<option value="3">Excedente</option>
+						<option value="4">Obsoleto</option>
+						<option value="5">Inservible</option>
+					</select>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="InvActualRP"><strong>Existencia Inventario</strong></label>
+					<input type="number" name="InvActualRP" id="InvActualRP" data-clear-btn="true" placeholder="Existencia Inventario"/>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="VrUnitarioRP"><strong>Costo Unitario Vigente</strong></label>
+					<input type="number" name="VrUnitarioRP" id="VrUnitarioRP" data-clear-btn="true" placeholder="Costo Unitario Vigente"/>
+				</li>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="ingresar" data-role="button" data-icon='check' onclick="guardar();" >Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+			
+</body>
+</html>

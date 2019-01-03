@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+	<script src="js/jquery-1.11.3.min.js"></script>
+	<script src="js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+	<meta charset="UTF-8">
+   <!-- <link rel="stylesheet" href="css/themes/prueba1.min.css" />
+    <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+    <link rel="stylesheet" href="css/themes/micss.css" />
+    -->
+    
+    <script type="text/javascript" src="cordova.js"></script>
+    <link rel="stylesheet" href="css/themes/amovil.css" />
+
+    <script type="text/javascript" src="url.js"></script>
+    <script src="panel2.js" type="text/javascript"></script>
+
+	<title>Amovil</title>
+
+	<script type="text/javascript">
+		$.support.cors                 = true;
+        $.mobile.allowCrossDomainPages = true;
+        $.mobile.pushStateEnabled      = false;
+
+	    $(document).on('pageinit','#menu', function(){
+	    	$('#error').html("Bienvenido " + localStorage.usuario + " - Compañía " + localStorage.compania);
+	    	window.isphone = false;
+            if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
+                window.isphone = true;
+            }
+            if(window.isphone) {
+                document.addEventListener("deviceready", onDeviceReady, false);
+                document.addEventListener("pause", onResume, false);
+            } else {
+                onDeviceReady();
+                onResume();
+            }
+            //if(localStorage.adman !== "1"){
+            	$('#Adman').hide();
+            //}
+
+            if(localStorage.adman !== "1"){
+				$('#Eval').hide();
+			}
+	    });
+
+	    document.addEventListener("backbutton", function (e) {
+			navigator.app.exitApp();
+		}, false);
+
+	</script>
+</head>
+<body>
+
+	<div data-role="page" id="menu" data-url="menu">
+
+		<div data-role="header">
+			<a href='#mypanel' data-role='button' data-iconpos='notext' class="ui-btn-left" data-icon="home"></a>
+			<h1> <span class="breadcrumb">AMovil</span> <span class="breadcrumbNo">Men&uacute; Principal</span></h1>
+		</div>
+
+		<div data-role="content">
+			<ul data-role="listview" data-inset="true" id="Ul1">
+				<li data-icon="false"><a href="Activos/menuGenActivo.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Activos</a></li>
+				<li data-icon="false"><a href="SS/ConsultaSS.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Solicitudes de Servicio</a></li>
+				<li data-icon="false"><a href="OT/consultaOT.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Ordenes de Trabajo</a></li>
+				<li data-icon="false"><a href="paro/consultaPA.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Paros</a></li>
+				<li data-icon="false"><a href="Repuestos/BuscarRepuestos.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Repuestos</a></li>
+				<li data-icon="false" id="Adman"><a href="www/pages/menu.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Administración</a></li>
+				<li data-icon="false" id="Eval"><a href="Eval/evaluadores.html" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Evaluadores</a></li>
+				<li data-icon="false"><a onclick="cerrarSesion();" data-transition="slide" data-ajax="false"><div class="mainMenuPoint"></div>Cerrar Sesi&oacute;n</a></li>
+			</ul>
+		</div>
+		<p id="error"></p>
+	</div>
+</body>
+</html>

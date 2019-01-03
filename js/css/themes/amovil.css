@@ -1,0 +1,95 @@
+*{
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    text-shadow: none !important;
+}
+
+.ui-page{
+    background-color: #fff !important;
+}
+
+.ui-header{
+    background-color: #276F9F !important;
+    height: 56px !important;
+    font-size: 20px !important;
+    box-sizing: border-box !important;
+}
+
+.ui-content{
+    padding: 1em 0px;
+}
+
+.ui-field-contain{
+    border-bottom: 0px !important;
+    border-bottom-style: none !important;
+}
+
+.ui-title{
+    margin: 0px 10% !important;
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+.ui-select{
+    width: 100% !important;
+}
+
+.ui-input-clear{
+    display: none !important;
+}
+
+label{
+    padding: 0px 1em;
+    color: rgba(0,0,0,.54) !important;
+    margin-bottom: 15px !important;
+}
+
+#company-button, .ui-input-text{
+    padding: 1em 0px !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 0 !important;
+    border-top: 1px !important;
+    border-top-style: solid !important;
+    border-top-color: #eee !important;
+    border-bottom: 1px !important;
+    border-bottom-style: solid !important;
+    border-bottom-color: #eee !important;
+    border-radius: 0 !important;
+}
+
+#company-button:after{
+    left: 1em;
+    right: auto;
+    background-color: #fff !important;
+    background-image: url("images/icons-png/url-black.png");
+}
+
+.ui-input-text {
+    width: 100% !important;
+    padding: 0.5em 0px !important;
+ }
+
+ .ui-input-text:nth-child(3) {
+    border-top: 0px !important;
+    border-top-style: none !important;
+    border-top-color: #ddd !important;
+    margin-bottom: 10px !important;
+ }
+
+#userName, #pwd{
+    width: auto;
+    margin-left: 65px;
+}
+
+ #ingresar{
+    margin: 0px 5px !important;
+    color: #fff !important;
+    padding: 1em 0px !important;
+    background-color: #276F9F !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+ }

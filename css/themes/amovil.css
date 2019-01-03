@@ -1,0 +1,433 @@
+@font-face {font-family: "Comic Sans MS";
+  src: url("7cc6719bd5f0310be3150ba33418e72e.ttf") format("opentype"), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+}
+
+*{
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    text-shadow: none !important;
+}
+
+.ui-page, .ui-page-theme-a, .ui-panel-wrapper {
+    background-color: #fff !important;
+}
+
+.ui-header{
+    background-color: #276F9F !important;
+    height: 56px !important;
+    font-size: 20px !important;
+    box-sizing: border-box !important;
+}
+
+.ui-content{
+    font-size: 12px !important;
+    padding: 0em 1em;
+}
+
+.ui-content ul{
+    border-width: 0px !important;
+    box-shadow: none !important;
+}
+
+.ui-field-contain{
+    border-bottom: 0px !important;
+    border-bottom-style: none !important;
+}
+
+.ui-title{
+    margin: 2px 1% 0px 55px !important;
+    color: #fff !important;
+    display: inline-flex !important;
+    text-align: left !important;
+    text-shadow: none !important;
+    font-size: 14px !important;
+}
+
+.ui-select{
+    width: 100% !important;
+}
+
+.ui-input-text .ui-input-clear{
+    display: none !important;
+}
+
+#Ul1 li a{
+    font-size: 14px !important;
+}
+
+label{
+    font-size: 12px !important;
+    padding: 0px 0.2em;
+    color: rgba(0,0,0,.54) !important;
+    margin-bottom: -2px !important;
+}
+
+#company-button, #logon .ui-input-text{
+    padding: 1em 0px !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 0 !important;
+    border-top: 1px !important;
+    border-top-style: solid !important;
+    border-top-color: #eee !important;
+    border-bottom: 1px !important;
+    border-bottom-style: solid !important;
+    border-bottom-color: #eee !important;
+    border-radius: 0 !important;
+}
+
+#company-button:after{
+    left: 1em;
+    right: auto;
+    background-color: #fff !important;
+    background-image: url("images/icons-png/url-black.png");
+}
+
+ #logon .ui-input-text {
+    width: 100% !important;
+    padding: 0.5em 0px !important;
+    height: auto !important;
+ }
+
+ #logon .ui-input-text:nth-child(3) {
+    border-top: 0px !important;
+    border-top-style: none !important;
+    border-top-color: #ddd !important;
+    margin-bottom: 10px !important;
+ }
+
+#userName, #pwd{
+    width: 90%;
+    height: 100%;
+    margin-left: 65px;
+    display: inline-flex;
+}
+
+.ui-field-contain #ingresar{
+    margin: 0px 5px !important;
+    color: #fff !important;
+    padding: 1em 0px !important;
+    background-color: #276F9F !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+ }
+
+.user{
+    margin-top: 3px;
+    position: absolute;
+    height: 100%;
+    width: 45px !important;
+    margin-left: 17px;
+    display: inline-flex;
+    border-width: 1px !important;
+    border-color: #fff !important;
+    background-color: #fff !important;
+    background-image: url("images/icons-png/user-gray.png");
+    background-repeat: no-repeat;
+    height: 24px;
+    width: 24px;
+}
+
+.paswd{
+    background-image: url("images/icons-png/password-black.png");
+}
+
+.doc{
+    position: absolute;
+    display: inline-block;
+    background-color: #FF7514;
+    border-radius: 50%;
+    height: 14px;
+    width: 14px;
+    right: 20px;
+    top: 20px;
+}
+
+#error{
+    bottom: -16px;
+    position: fixed;
+    text-align: center;
+    width: 100%;
+    padding: 10px 0px;
+    color: white;
+    z-index: 100;
+    background-color: #4e4e4e;
+    padding-left: 5px !important;
+}
+
+.ui-btn-left, .ui-btn-right{
+    background-color: transparent !important;
+    border-width: 2px !important;
+    border-color: #fff !important;
+    margin-top: 5px !important;
+    margin-left: 5px !important;
+}
+
+.ui-header .ui-btn-icon-left:after, .ui-header .ui-btn-icon-right:after, .ui-header .ui-btn-icon-top:after, .ui-header .ui-btn-icon-bottom:after, .ui-header .ui-btn-icon-notext:after{
+    background-color: transparent !important;
+}
+
+
+.ui-input-text{
+    padding: 0px !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: #bbb !important;
+    border-radius: 5px !important;
+    width: 100% !important;
+    height: 28px !important;
+}
+
+.ui-icon-carat-d{
+    vertical-align: middle !important;
+    padding: 6px 0px 0px 0px !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: #bbb !important;
+    border-radius: 5px !important;
+    height: 22px !important;
+    font-size: 12px !important;
+}
+
+.ui-input-search{
+    max-width: 100% !important;
+    padding: 0px 0px !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: #bbb !important;
+    border-radius: 5px !important;
+    width: 100% !important;
+    height: 28px !important;
+}
+
+.inset .ui-input-search{
+    width: auto !important;
+}
+
+.ui-grid-a .ui-block-a a, .ui-grid-a .ui-block-b a{
+    color: #fff !important;
+    border-radius: 0px !important;
+    background-color: #276F9F !important;
+ }
+
+ .ui-grid-solo .ui-block-a a, .ui-grid-solo .ui-block-a button{
+    color: #fff !important;
+    border-radius: 0px !important;
+    background-color: #276F9F !important;
+ }
+
+ h3{
+    text-align: right;
+ }
+
+#titulo{
+    text-align: center;
+ }
+
+#DetalleActivo .ui-listview li div input{
+    color: black !important;
+ }
+
+.ui-listview li a div label label{
+    font-size: 15px !important;
+}
+
+.ui-listview li a div label label p{
+    font-size: 13px !important;
+}
+
+.ui-content p, .ui-content .ui-controlgroup{
+    padding-left: 15px !important;
+}
+
+#ActualizaFechas .ui-content .ui-collapsible{
+    margin-left: -12px;
+}
+
+#mypanel{
+    background-color: #fff;
+}
+
+#mypanel div ul{
+    border-top: 1px !important;
+    border-top-style: solid !important;
+    border-top-color: #ccc !important;
+    border-bottom: 1px !important;
+    border-bottom-style: solid !important;
+    border-bottom-color: #ccc !important;
+}
+
+#mypanel div ul li{
+    list-style-type: none;
+    padding: 0.7em 0 !important;
+    border-top: 1px !important;
+    border-top-style: solid !important;
+    border-top-color: #ccc !important;
+}
+
+#mypanel div ul li:nth-child(1){
+    border-top: 0px !important;
+    border-top-style: solid !important;
+    border-top-color: #ccc !important;
+}
+
+#mypanel div ul li:nth-child(1) a{
+    color: #aaa !important;
+}
+
+#mypanel div ul li a{
+    width: 100%;
+    display: block;
+    text-decoration: none !important;
+}
+
+.ui-panel-dismiss{
+    background-color: rgba(0, 0, 0, 0.39);
+}
+
+strong, b{
+    font-weight: bold !important;
+}
+.logo{
+    margin: auto 35% !important;
+    margin-top: 10px !important;
+    width: 100px !important;
+    height: 40px !important;
+    background-color: transparent !important;
+    background-image: url("../../img/AMOVI3.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+center #buscar{
+    background-color: #CEE3FB !important;
+    box-shadow: none !important;
+}
+
+.breadcrumb{
+    top: -6px;
+    position: relative;
+}
+
+.breadcrumb::after{
+    content: '>';
+    top: 3px;
+    position: relative;
+    color: rgba(255,255,255,0.7);
+    display: inline-flex;
+    font-family:"Comic Sans MS" !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 25px;
+    margin: 0 10px 0 8px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.breadcrumbNo{
+    top: 5.8px;
+    position: relative;
+}
+
+#menuInv .ui-content, #listaReporte .ui-content, #detalleReporte .ui-content{
+    padding: 1em;
+}
+
+.ui-collapsible-heading-toggle{
+    box-shadow: none !important;
+}
+
+#logon .ui-content{
+    padding: 1em 0px !important;
+}
+
+#logon label{
+    padding: 0px 1em;
+    color: rgba(0,0,0,.54) !important;
+    margin-bottom: 15px !important;
+}
+
+#logon *{
+    font-size: 1em !important;
+}
+
+.subgrupo{
+    background-color: rgba(15, 189, 123, 0.55) !important;
+    padding: 1px 16px !important;
+    margin: 0em -15px !important;
+}
+
+.ots{
+    text-align: left !important;
+}
+
+.totalOTSSPA{
+    display: block;
+    text-align: right !important;
+}
+
+#checkSoli{
+    margin: -7px -7px 0px -7px;
+}
+
+#signature{
+    margin-top: 65px;
+    margin-left: -25%;
+}
+
+@media screen and (max-height: 400px) {
+    #signature{
+        margin-top: -65px;
+    }
+
+    body{
+        overflow: hidden;
+    }
+}
+
+#firma{
+    margin-top: 15px;
+}
+
+.mainMenuPoint{
+    position: relative;
+    display: inline-block;
+    background-color: #555;
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+    margin-right: 10px;
+}
+
+.textBig{
+    height: 100px !important;
+}
+
+.responFirm{
+    right: 0;
+    position: absolute;
+    margin-top: -13px !important;
+}
+
+@media screen and (max-width: 600px) {
+    .responFirm{
+        right: initial;
+        position: initial;
+        margin-top: initial !important;
+    }
+}
+
+.ui-listview > li p {
+    white-space: normal !important;
+}

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+	<script src="../js/jquery-1.11.3.min.js"></script>
+	<script src="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+    <link rel="stylesheet" href="../css/themes/amovil.css" />
+	
+	<script type="text/javascript" src="../cordova.js"></script>
+    <script src="../url.js" type="text/javascript"></script>
+    <script src="../general.js" type="text/javascript"></script>
+    <title>Amovil</title>
+
+    <script type="text/javascript">
+	 	$.support.cors                 = true;
+	  	$.mobile.allowCrossDomainPages = true;
+      	$.mobile.pushStateEnabled      = false;
+
+		$(document).on("pageinit","#DetalleSS",function(){ 
+			window.isphone = false;
+		    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+		    if(window.isphone) {
+        		document.addEventListener("deviceready", onDeviceReady, false);
+				document.addEventListener("deviceready", buscarSS, false);
+	    	} else {
+    			onDeviceReady();
+	    		buscarSS();
+		    }	   		
+		});
+
+		function buscarSS(){
+			var SS = $_GET("OS");
+            $('#titulo').html('SS ' + SS);
+            $('#numSS').val(SS);
+
+			var usr = localStorage.usuario;
+
+			var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+         	$.ajax({
+	            type       : 'GET',
+	            url        : uri + '/ss',
+	            crossDomain: true,
+	            beforeSend : function() {$.mobile.loading('show')},
+	            complete   : function() {$.mobile.loading('hide')},
+	            data       : ajax_data,
+	            dataType   : 'json',
+	            success    : function(response) {
+	            				llenarInformacion(response);
+                },
+	            error      : function(xhr, ajaxOptions, thrownError) {
+                            	alert("ERROR:"+xhr.status);
+	                		}
+	        });
+
+		}
+
+		function llenarInformacion(response){
+			$('#operaciones a').remove();
+			$.each(response, function (key, item) {
+		   		if(item.estadoos == 1){
+		   			$('#operaciones').append('<a href="#ActualizaEquipo" data-role="button" data-mini="true"  data-icon="edit">Actualizar Equipo</a>')
+		   		}
+
+		   		if(item.estadoos == 2){
+		   			$('#operaciones').append('<a href="#ActualizaEquipo" data-role="button" data-mini="true"  data-icon="edit">Actualizar Equipo</a>')
+		   			$('#operaciones').append('<a href="#ActualizaTipificacion" data-role="button" data-mini="true"  data-icon="edit">Actualizar Tipificacion</a>')
+		   			$('#operaciones').append('<a href="#ActualizaFecha" data-role="button" data-mini="true"  data-icon="clock">Actualizar Fechas</a>')
+		   			$('#operaciones').append('<a href="#ActualizaDuracion" data-role="button" data-mini="true"  data-icon="clock">Actualizar Duracion</a>')
+		   			$('#operaciones').append('<a href="#CierreSS" data-role="button" data-mini="true"  data-icon="edit">Cierre de la SS</a>')
+		   			$('#operaciones').append('<a href="#EvalSS" data-role="button" data-mini="true"  data-icon="edit">Evaluacion de la SS</a>')
+
+		   		}
+		   		if(item.estadoos == 3 || item.estadoos == 4 || item.estadoos == 5){
+		   			$('#operaciones').append('<a href="#CierreSS" data-role="button" data-mini="true"  data-icon="edit">Cierre de la SS</a>')
+		   			$('#operaciones').append('<a href="#EvalSS" data-role="button" data-mini="true"  data-icon="edit">Evaluacion de la SS</a>')
+		   		}
+			});
+			$('#operaciones').trigger('create');
+		}
+
+
+		$(document).on('pageinit','#ActualizaFecha', function(){ cargarForm('Fechas');});
+		$(document).on('pageinit','#ActualizaDuracion', function(){ cargarForm('Duracion');});
+		$(document).on('pageinit','#ActualizaEquipo', function(){ cargarForm('Equipo');});
+		$(document).on('pageinit','#CierreSS', function(){ cargarForm('Cierre');});
+		$(document).on('pageinit','#EvalSS', function(){ cargarForm('Eval');});
+		$(document).on('pageinit','#ActualizaTipificacion', function(){ cargarForm('Tip');});
+
+
+
+		function cargarForm(tipo){
+			window.isphone = false;
+		    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+		    if(window.isphone) {
+				document.addEventListener("deviceready", onDeviceReady, false);
+				if(tipo=='Fechas'){document.addEventListener("deviceready", cargarFechas, false);
+				}else if (tipo == 'Duracion'){document.addEventListener("deviceready", cargarDuracion, false);
+				}else if (tipo == 'Equipo'){document.addEventListener("deviceready", cargarEQ, false);
+				}else if (tipo == 'Cierre'){document.addEventListener("deviceready", cargarEstadoSS, false);
+											document.addEventListener("deviceready", cargarCierre, false);
+				}else if (tipo == 'Eval'){document.addEventListener("deviceready", cargarEvaluacion, false);
+											document.addEventListener("deviceready", cargarPregEval, false);
+				}else if (tipo == 'Tip'){document.addEventListener("deviceready", cargarTip, false);
+				}
+	    	} else {
+				onDeviceReady();
+				if(tipo=='Fechas'){cargarFechas();
+				}else if (tipo == 'Duracion'){cargarDuracion();
+				}else if (tipo == 'Equipo'){cargarEQ();
+				}else if (tipo == 'Cierre'){cargarEstadoSS(); cargarCierre() 
+				}else if (tipo == 'Eval'){cargarEvaluacion(); cargarPregEval()
+				}else if (tipo == 'Tip'){cargarTip();}
+	    	}
+		}
+
+	function cargarFechas() {
+    	var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSSf').html(item.numero);
+						   		$('#fecGeneracionf').html(item.fechageneracion);
+						   		$('#eqf').html(item.IDEEQ + ' - ' + item.DESEQ);
+
+						   		$('#fecAsignacionf').val(item.asignacion_fecha);
+						   		$('#fecAsignacionfh').val(item.asignacion_hora);
+
+						   		$('#fecITf').val(item.inicio_trabajos_fecha);
+						   		$('#fecITfh').val(item.inicio_trabajos_hora);
+
+						   		$('#fecFTf').val(item.fin_trabajos_fecha);
+						   		$('#fecFTfh').val(item.fin_trabajos_hora);
+
+						   		$('#fcierref').html(item.cierre_fecha + ' ' + item.cierre_hora);
+							});
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+	}
+
+
+	function cargarDuracion() {
+    	var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSSa').html(item.numero);
+						   		$('#fecGeneracionD').html(item.fechageneracion);
+						   		$('#eqD').html(item.IDEEQ + ' - ' + item.DESEQ);
+
+						   		$('#DiasTextBox').val(item.DiasDuracionOS);
+						   		$('#HorasTextBox').val(item.HorasDuracionOS);
+						   		$('#MinutosTextBox').val(item.MinutosDuracionOS);
+							});
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+	}
+
+
+	function cargarEQ() {
+    	var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSSE').html(item.numero);
+						   		$('#fecGeneracionE').html(item.fechageneracion);
+						   		$('#eqE').val(item.IDEEQ + ' - ' + item.DESEQ);
+							});
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+
+       	cargarEquipos();
+	}
+
+
+	function cargarEquipos() {
+	    $("#Eqs li").remove();
+  		checkConnection();
+  		var ajax_data = {'codigo': '', 'parametro': '0', 'compania': localStorage.compania};
+	    $.ajax({
+	        type       : 'GET',
+	        url        : uri + '/equipos',
+	        crossDomain: true,
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+    		data       : ajax_data,
+	        dataType   : 'json',
+	        success    : function(response) {
+	                      $("#Eqs").listview();
+	                      $.each(response, function (key, item) {
+	                        $("#Eqs").append(' <li>'+ item.codigo + ' - ' + item.descripcion +'</li>');
+	                      });
+	                      $("#Eqs").listview('refresh');
+	                    },
+	        error      : function(xhr, ajaxOptions, thrownError) {}
+	    });
+
+	    $( document).on( "click", ".autEQ li", function() {      
+	        var selectedItem = $(this).html();
+	        $(this).parent().parent().find('input').val(selectedItem);   
+	        $('.autEQ').hide();     
+	    });
+
+	    $( document).on( "focus", "#eqE", function() {      
+	        var values = $('#eqE').val();
+	        if (values == ""){ $('.autEQ').show(); }
+	    });
+
+	    $( document).on( "keydown", "#eqE", function() { $('.autEQ').hide(); });
+	    $( ".autEQ" ).on( "listviewbeforefilter", function ( e, data ) {$('.autEQ').show();})
+	    $('.autEQ').hide(); 
+	}
+
+	function validarEq() {
+	  var val = $('#eqE').val();
+	  var x = false;
+	  if (val != ""){
+	      $(".autEQ li").each(function (index) {
+	          var selectedItem = $(this).html();
+	          if(val == selectedItem){x = true;}
+	      });
+	  }else{ x = true;}
+	  if(x == false){alert('Debe escoger un equipo v\u00e1lido de la lista');}
+	      return x;
+	}
+
+	function cargarCierre() {
+    	var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSSC').html(item.numero);
+						   		$('#fecGeneracionC').html(item.fechageneracion);
+						   		$('#eqC').html(item.IDEEQ + ' - ' + item.DESEQ);
+						   		$('#EstadoSS').val(item.estadoos);
+						   		$('#ComTextBox').val(item.comentarios);
+							});
+							$('#EstadoSS').change();
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+	}
+
+	function cargarEstadoSS() {
+	    $.ajax({
+	            type       : 'GET',
+	            url        : uri + '/estadoss',
+	            crossDomain: true,
+	            beforeSend : function() {$.mobile.loading('show')},
+	            complete   : function() {$.mobile.loading('hide')},
+	            dataType   : 'json',
+	            success    : function(response) {
+	                            $.each(response, function (key, item) {
+	                                 $('<option>', { text: item.NomES, value: item.ES }).appendTo($('#EstadoSS'));
+	                            });
+	                            $('#EstadoSS').selectmenu("refresh", true);
+	                        },
+	            error      : function(xhr, ajaxOptions, thrownError) {
+	                            $('<option>', { text: 'no se encuentra ninguna estado', value: '0' }).appendTo($('#EstadoSS'));
+	                            $('#EstadoSS').selectmenu("refresh", true);
+	                        }
+	        });
+			$('#EstadoSS').change();
+	}
+
+	function cargarEvaluacion(){
+		var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSSEval').html(item.numero);
+						   		$('#fecGeneracionEval').html(item.fechageneracion);
+						   		$('#eqEval').html(item.IDEEQ + ' - ' + item.DESEQ);
+						   		if (item.resEval1OS != "" &&  item.resEval1OS != 0){
+						   			$('#rbr1').val(item.resEval1OS);
+						   		}
+						   		if (item.resEval2OS != "" &&  item.resEval2OS != 0){
+						   			$('#rbr2').val(item.resEval2OS);
+						   		}
+						   		if (item.resEval3OS != "" &&  item.resEval3OS != 0){
+						   			$('#rbr3').val(item.resEval3OS);
+						   		}
+						   		if (item.resEval4OS != "" &&  item.resEval4OS != 0){
+						   			$('#rbr4').val(item.resEval4OS);
+						   		}
+						   		if (item.resEval5OS != "" &&  item.resEval5OS != 0){
+						   			$('#rbr5').val(item.resEval5OS);
+						   		}
+							});
+							$('#rbr1').selectmenu("refresh", true);
+                  			$('#rbr2').selectmenu("refresh", true);
+                  			$('#rbr3').selectmenu("refresh", true);
+                  			$('#rbr4').selectmenu("refresh", true);
+                  			$('#rbr5').selectmenu("refresh", true);
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+	}
+
+	function cargarPregEval(){
+
+		var ajax_data = {'IdeCY': localStorage.compania};
+	 	$.ajax({
+	        type       : 'GET',
+	        url        : uri + '/evaluacion',
+	        crossDomain: true,
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+	        data       : ajax_data,
+	        dataType   : 'json',
+	        success    : function(response) {
+	        				$.each(response, function (key, item) {
+						   		if (item.Pregunta1 != ""){$("#p1").find('strong').text(item.Pregunta1);}else{ $("#rblP1").hide();}
+						   		if (item.Pregunta2 != ""){$("#p2").find('strong').text(item.Pregunta2);}else{ $("#rblP2").hide();}
+						   		if (item.Pregunta3 != ""){$("#p3").find('strong').text(item.Pregunta3);}else{ $("#rblP3").hide();}
+						   		if (item.Pregunta4 != ""){$("#p4").find('strong').text(item.Pregunta4);}else{ $("#rblP4").hide();}
+						   		if (item.Pregunta5 != ""){$("#p5").find('strong').text(item.Pregunta5);}else{ $("#rblP5").hide();}
+						   		
+							});
+	        },
+	        error      : function(xhr, ajaxOptions, thrownError) {
+	                    	alert("ERROR:"+xhr.status);
+	            		}
+	    });
+
+	}
+
+
+	function guardarEvaluacion() {
+		checkConnection();
+    	var SS = $('#numSSEval').html();
+		var ajax_data = { "IdeCY": 					localStorage.compania,
+	                      "OS": 					SS,
+						  "resEval1": 	    		$('#rbr1').val(),
+						  "resEval2":				$('#rbr2').val(),
+						  "resEval3":				$('#rbr3').val(),
+						  "resEval4":				$('#rbr4').val(),
+						  "resEval5":				$('#rbr5').val(),
+						  "comentario":				$('#ComTxt').val(),
+						  "modo":  					'1'
+						};
+	    $.ajax({
+	        type       : 'POST',
+	        url        : uri + '/evaluacion',
+	        crossDomain: true,
+	        contentType:"application/json",
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+	        data       : JSON.stringify(ajax_data),
+	        success    : function(response) {
+	                        alert(response);
+	                    },
+	        error      : function(xhr, ajaxOptions, thrownError) {
+						  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+	                	}
+	    });
+    } 
+
+
+    function cargarTip() {
+    	var SS = $_GET("OS");
+        $('#titulo').html('SS ' + SS);
+		var usr = localStorage.usuario;
+		var ajax_data = {'IdeCY': localStorage.compania, 'usuario': usr, 'os': SS};
+     	$.ajax({
+            type       : 'GET',
+            url        : uri + '/ss',
+            crossDomain: true,
+            beforeSend : function() {$.mobile.loading('show')},
+            complete   : function() {$.mobile.loading('hide')},
+            data       : ajax_data,
+            dataType   : 'json',
+            success    : function(response) {
+            				$.each(response, function (key, item) {
+								$('#numSST').html(item.numero);
+						   		$('#fecGeneracionT').html(item.fechageneracion);
+						   		$('#eqT').html(item.IDEEQ + ' - ' + item.DESEQ);
+
+						   		if (item.mecanico == "True"){
+						   			$('#chk1').click()
+						   		}
+						   		if (item.electrico == "True"){
+						   			$('#chk2').click()
+						   		}
+						   		if (item.iee == "True"){
+						   			$('#chk3').click()
+						   		}
+						   		if (item.otro == "True"){
+						   			$('#chk4').click()
+						   		}
+						   		$('#tmmtoOS').val(item.tmmto);
+						   		$('#AME').val(item.Actividad);
+
+							});
+	                        $('#tmmtoOS').selectmenu("refresh", true);
+							cargarAM();
+
+            },
+            error      : function(xhr, ajaxOptions, thrownError) {
+                        	alert("ERROR:"+xhr.status);
+                		}
+        });
+	}
+
+	function cargarAM() {
+	    $("#AMs li").remove();
+  		checkConnection();
+  		var ajax_data = {'IdeCY': localStorage.compania};
+	    $.ajax({
+	        type       : 'GET',
+	        url        : uri + '/actividadmmto',
+	        crossDomain: true,
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+    		data       : ajax_data,
+	        dataType   : 'json',
+	        success    : function(response) {
+	                      $("#AMs").listview();
+	                      $.each(response, function (key, item) {
+	                        $("#AMs").append(' <li>'+ item.NomAM +'</li>');
+	                      });
+	                      $("#AMs").listview('refresh');
+	                    },
+	        error      : function(xhr, ajaxOptions, thrownError) {}
+	    });
+
+	    $( document).on( "click", ".autAM li", function() {      
+	        var selectedItem = $(this).html();
+	        $(this).parent().parent().find('input').val(selectedItem);   
+	        $('.autAM').hide();     
+	    });
+
+	    $( document).on( "focus", "#AME", function() {      
+	        var values = $('#AME').val();
+	        if (values == ""){ $('.autAM').show(); }
+	    });
+
+	    $( document).on( "keydown", "#AME", function() { $('.autAM').hide(); });
+	    $( ".autAM" ).on( "listviewbeforefilter", function ( e, data ) {$('.autAM').show();})
+	    $('.autAM').hide(); 
+	}
+
+	function validarAM() {
+	  var val = $('#AME').val();
+	  var x = false;
+	  if (val != ""){
+	      $(".autAM li").each(function (index) {
+	          var selectedItem = $(this).html();
+	          if(val == selectedItem){x = true;}
+	      });
+	  }else{ x = true;}
+	  if(x == false){alert('Debe escoger una actividad de mantenimiento v\u00e1lida de la lista');}
+	      return x;
+	}
+
+
+
+
+	function guardarTip(opcion) {
+		checkConnection();
+		if(validarAM()){
+	    	var SS = $('#numSST').html();
+			var ajax_data = { "IdeCY": 					localStorage.compania,
+		                      "Usuario": 				localStorage.usuario,
+							  "numero": 	    		SS,
+							  "TipoActualizacion": 		opcion,
+		                      "mecanico":     			$('#chk1').prop('checked'), 	
+		                      "electrico":      		$('#chk2').prop('checked'),
+		                      "iee": 					$('#chk3').prop('checked'),
+		                      "otro": 					$('#chk4').prop('checked'),
+		                      "tmmto": 					$('#tmmtoOS').val(),
+		                      "Actividad":   			$('#AME').val()
+							};
+		    $.ajax({
+		        type       : 'POST',
+		        url        : uri + '/fechass',
+		        crossDomain: true,
+		        contentType:"application/json",
+		        beforeSend : function() {$.mobile.loading('show')},
+		        complete   : function() {$.mobile.loading('hide')},
+		        data       : JSON.stringify(ajax_data),
+		        success    : function(response) {
+		                        alert(response);
+		                    },
+		        error      : function(xhr, ajaxOptions, thrownError) {
+							  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+		                	}
+		    });
+		}
+    }  
+
+
+
+
+
+	function guardarFechas(opcion) {
+		checkConnection();
+    	var SS = $('#numSSf').html();
+		var ajax_data = { "IdeCY": 					localStorage.compania,
+	                      "Usuario": 				localStorage.usuario,
+						  "numero": 	    		SS,
+						  "TipoActualizacion": 		opcion,
+	                      "asignacion_fecha":     	$('#fecAsignacionf').val(), 	
+	                      "asignacion_hora":      	$('#fecAsignacionfh').val(),
+	                      "inicio_trabajos_fecha": 	$('#fecITf').val(), 
+	                      "inicio_trabajos_hora": 	$('#fecITfh').val(),
+	                      "fin_trabajos_fecha": 	$('#fecFTf').val(),       
+	                      "fin_trabajos_hora": 	    $('#fecFTfh').val(),
+				   		  "fechageneracion": 	 	$('#fecGeneracionf').text()
+						};
+	    $.ajax({
+	        type       : 'POST',
+	        url        : uri + '/fechass',
+	        crossDomain: true,
+	        contentType:"application/json",
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+	        data       : JSON.stringify(ajax_data),
+	        success    : function(response) {
+	                        alert(response);
+	                    },
+	        error      : function(xhr, ajaxOptions, thrownError) {
+						  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+	                	}
+	    });
+    }  
+
+
+
+    function guardarDuracion(opcion) {
+		checkConnection();
+    	var SS = $('#numSSa').html();
+		var ajax_data = { "IdeCY": 					localStorage.compania,
+	                      "Usuario": 				localStorage.usuario,
+						  "numero": 	    		SS,
+						  "TipoActualizacion": 		opcion,
+						  "DiasDuracionOS":			$('#DiasTextBox').val(),
+						  "HorasDuracionOS":		$('#HorasTextBox').val(),
+						  "MinutosDuracionOS":		$('#MinutosTextBox').val()
+						};
+	    $.ajax({
+	        type       : 'POST',
+	        url        : uri + '/fechass',
+	        crossDomain: true,
+	        contentType:"application/json",
+	        beforeSend : function() {$.mobile.loading('show')},
+	        complete   : function() {$.mobile.loading('hide')},
+	        data       : JSON.stringify(ajax_data),
+	        success    : function(response) {
+	                        alert(response);
+	                    },
+	        error      : function(xhr, ajaxOptions, thrownError) {
+						  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+	                	}
+	    });
+    }  
+
+
+    function guardarEquipo(opcion) {
+    	if(validarEq){
+    		checkConnection();
+	    	var SS = $('#numSSE').html();
+			var ajax_data = { "IdeCY": 					localStorage.compania,
+		                      "Usuario": 				localStorage.usuario,
+							  "numero": 	    		SS,
+							  "TipoActualizacion": 		opcion,
+							  "Equipo":					$('#eqE').val()
+							};
+		    $.ajax({
+		        type       : 'POST',
+		        url        : uri + '/fechass',
+		        crossDomain: true,
+		        contentType:"application/json",
+		        beforeSend : function() {$.mobile.loading('show')},
+		        complete   : function() {$.mobile.loading('hide')},
+		        data       : JSON.stringify(ajax_data),
+		        success    : function(response) {
+		                        alert(response);
+		                    },
+		        error      : function(xhr, ajaxOptions, thrownError) {
+							  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+		                	}
+		    });
+    	}
+    }  
+
+
+    function guardarCierre(opcion) {
+    		checkConnection();
+	    	var SS = $('#numSSC').html();
+			var ajax_data = { "IdeCY": 					localStorage.compania,
+		                      "Usuario": 				localStorage.usuario,
+							  "numero": 	    		SS,
+							  "TipoActualizacion": 		opcion,
+							  "estadoos":				$('#EstadoSS').val(),
+							  "comentarios":			$('#ComTextBox').val()
+							};
+		    $.ajax({
+		        type       : 'POST',
+		        url        : uri + '/fechass',
+		        crossDomain: true,
+		        contentType:"application/json",
+		        beforeSend : function() {$.mobile.loading('show')},
+		        complete   : function() {$.mobile.loading('hide')},
+		        data       : JSON.stringify(ajax_data),
+		        success    : function(response) {
+		                        alert(response);
+		                    },
+		        error      : function(xhr, ajaxOptions, thrownError) {
+							  alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+		                	}
+		    });
+    } 
+
+
+
+  	</script>
+</head>
+<body>
+	<div data-role="page" data-mini="true" id="DetalleSS">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href='#' data-rel="back" class="back-btn" data-role='button' data-icon="back" data-iconpos='notext'></a>
+			<h1 id="titulo">SS</h1>
+		</div>
+		<div data-role="content">
+			<!--<div id='descripcion'>
+				<p id = "desc"></p>
+			</div>
+	        <div data-role="collapsible" data-inset="false" data-icon="false">
+	            <h4>Datos de la SS</h4>
+	           	<div id='datosot' data-role="fieldcontain">
+			   		<label><strong>Solicitante</strong></label><p id="solicitante"></p>
+			   		<label><strong>Fecha Generaci&oacute;n</strong></label><p id="fecGen"></p>
+			   		<label><strong>Fecha Asignaci&oacute;n</strong></label><p id="fecAsignacion"></p>
+			   		<label><strong>Tipo de Actividad</strong></label><p id="pActividad"></p>
+			   		<label><strong>Prioridad</strong></label><p id="pPrioridad"></p>
+			   		<label><strong>Estado</strong></label><p id="pEstado"></p>
+	           	</div>
+	        </div>
+	        <div data-role="collapsible" data-inset="false" data-icon="false">
+	            <h4>Datos del Equipo</h4>
+	           	<div id= "datosEQ" data-role="fieldcontain">
+	           		<label><strong>C&oacute;digo:</strong></label><p id="pIdeEQ"></p>
+			   		<label><strong>Descripci&oacute;n:</strong></label><p id="pDesEQ"></p>
+			   		<label><strong>Centro de Costo</strong></label><p id="CCosto"></p>
+	           	</div>
+	        </div>
+	      -->
+	           	<div id= "operaciones" data-role="fieldcontain">
+	           	</div>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+		</div>
+	</div>
+<!------------------------------------------ Fecha ---------------------------------------- -->
+
+	<div data-role="page" id="ActualizaFecha" data-title="Cambio Fechas">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Cambio Fechas</h1>
+		</div>
+	   	<div data-role="content">   
+					<label><strong>N&uacute;mero de SS: </strong></label><p id="numSSf"></p>
+					<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionf"></p>
+					<label><strong>Equipo </strong></label><p id="eqf"></p>
+					<label><strong>FF/HH Cierre</strong></label>
+					<p id="fcierref"></p>
+
+					<label><strong>FF/HH de Asignaci&oacute;n:</strong></label>
+					<input type="text" id="fecAsignacionf"  data-clear-btn="true" placeholder="1999/01/01"/>
+					<input type="text" id="fecAsignacionfh"  data-clear-btn="true" placeholder="12:00:00"/>
+
+					<label><strong>FF/HH Inicio Trabajos</strong></label>
+					<input type="text" id="fecITf" data-clear-btn="true" placeholder="1999/01/01"/>
+					<input type="text" id="fecITfh"  data-clear-btn="true" placeholder="12:00:00">
+
+					<label><strong>FF/HH Fin Trabajos</strong></label>
+					<input type="text" id="fecFTf"  data-clear-btn="true" placeholder="1999/01/01"/>
+					<input type="text" id="fecFTfh" data-clear-btn="true" placeholder="12:00:00"/>
+
+					
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarFecha" data-role="button" data-icon='check' onclick="guardarFechas(2);">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+<!------------------------------------------ DURACION ---------------------------------------- -->
+
+	<div data-role="page" id="ActualizaDuracion" data-title="Actualiza Duracion">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Actualiza Duraci&oacute;n</h1>
+		</div>
+	   	<div data-role="content">   
+			<label><strong>N&uacute;mero de SS: </strong></label><p id="numSSa"></p>
+			<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionD"></p>
+			<label><strong>Equipo </strong></label><p id="eqD"></p>
+
+
+			<label><strong>Duraci&oacute;n d&iacute;as: </strong></label>
+			<input type="text" id="DiasTextBox"  data-clear-btn="true" />
+
+			<label><strong>Duraci&oacute;n Horas:</strong></label>
+			<input type="text" id="HorasTextBox" data-clear-btn="true"/>
+
+			<label><strong>Duraci&oacute;n Minutos:</strong></label>
+			<input type="text" id="MinutosTextBox"  data-clear-btn="true"/>
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarDur" data-role="button" data-icon='check' onclick="guardarDuracion(3);">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+<!------------------------------------------ EQUIPO ---------------------------------------- -->
+
+
+	<div data-role="page" id="ActualizaEquipo" data-title="Actualiza Equipo">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Actualiza Equipo</h1>
+		</div>
+	   	<div data-role="content">   
+			<label><strong>N&uacute;mero de SS: </strong></label><p id="numSSE"></p>
+			<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionE"></p>
+			<label><strong>Equipo</strong></label>
+			<input type="text" data-type="search" id="eqE"  placeholder="Equipo" data-clear-btn="true"/>
+			<ul id="Eqs" data-role="listview" data-filter="true" data-filter-reveal="false" class="autEQ" data-input="#eqE">
+			</ul>
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarEQ" data-role="button" data-icon='check' onclick="guardarEquipo(4);">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
+<!------------------------------------------ CIERRE ---------------------------------------- -->
+
+
+	<div data-role="page" id="CierreSS" data-title="Cierre SS">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Cierre SS</h1>
+		</div>
+	   	<div data-role="content">   
+			<label><strong>N&uacute;mero de SS: </strong></label><p id="numSSC"></p>
+			<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionC"></p>
+			<label><strong>Equipo </strong></label><p id="eqC"></p>
+
+
+			<label><strong>Estado: </strong></label>
+			<select name="EstadoSS" id="EstadoSS"></select>
+			<label><strong>Comentarios:</strong></label>
+			<input type="text" id="ComTextBox" data-clear-btn="true"/>
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarCierre" data-role="button" data-icon='check' onclick="guardarCierre(6);">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+<!------------------------------------------ Evaluacion ---------------------------------------- -->
+
+	<div data-role="page" id="EvalSS" data-title="Evaluar SS">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Evaluar SS</h1>
+		</div>
+	   	<div data-role="content">   
+					<label><strong>N&uacute;mero de SS: </strong></label><p id="numSSEval"></p>
+					<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionEval"></p>
+					<label><strong>Equipo </strong></label><p id="eqEval"></p>
+			<div  id= "datosEvaluacion" data-role="fieldcontain" >
+
+					<div id = "rblP1">
+				        <label id="p1"><strong></strong></label>
+						<select name="rbr1" id="rbr1">
+							<option value="1">Excelente</option>
+							<option value="2">Bueno</option>
+							<option value="3">Aceptable</option>
+							<option value="4">Regular</option>
+							<option value="5">Malo</option>
+						</select>
+					</div>
+					<div id = "rblP2">
+				        <label id="p2"><strong></strong></label>
+				        <select name="rbr2" id="rbr2">
+							<option value="1">Excelente</option>
+							<option value="2">Bueno</option>
+							<option value="3">Aceptable</option>
+							<option value="4">Regular</option>
+							<option value="5">Malo</option>
+						</select>
+					</div>
+
+	        		<div id = "rblP3">
+				        <label id="p3"><strong></strong></label>
+				        <select name="rbr3" id="rbr3">
+							<option value="1">Excelente</option>
+							<option value="2">Bueno</option>
+							<option value="3">Aceptable</option>
+							<option value="4">Regular</option>
+							<option value="5">Malo</option>
+						</select>
+					</div>						
+	        		<div id = "rblP4">
+				        <label id="p4"><strong></strong></label>
+				        <select name="rbr4" id="rbr4">
+							<option value="1">Excelente</option>
+							<option value="2">Bueno</option>
+							<option value="3">Aceptable</option>
+							<option value="4">Regular</option>
+							<option value="5">Malo</option>
+						</select>
+					</div>
+	        		<div id = "rblP5">
+				        <label id="p5"><strong></strong></label>
+				        <select name="rbr5" id="rbr5">
+							<option value="1">Excelente</option>
+							<option value="2">Bueno</option>
+							<option value="3">Aceptable</option>
+							<option value="4">Regular</option>
+							<option value="5">Malo</option>
+						</select>
+					</div>
+					
+					
+				    <label><strong>Comentarios:</strong></label>
+					<input type="text" id="ComTxt" data-clear-btn="true"/>
+	      	</div>
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarEvaluacion" data-role="button" data-icon='check' onclick="guardarEvaluacion();">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+<!------------------------------------------ tIPIFICACION ---------------------------------------- -->
+
+	<div data-role="page" id="ActualizaTipificacion" data-title="Tipificacion SS">
+	   	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+	   		<a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+			<h1>Tipificacion SS</h1>
+		</div>
+	   	<div data-role="content">   
+					<label><strong>N&uacute;mero de SS: </strong></label><p id="numSST"></p>
+					<label><strong>FF/HH Generaci&oacute;n </strong></label><p id="fecGeneracionT"></p>
+					<label><strong>Equipo </strong></label><p id="eqT"></p>
+
+
+  					<label><strong>Tipo Trabajo</strong></label>
+					<fieldset data-role="controlgroup" data-type="horizontal" id="rblP1">
+				        <legend id="p1"></legend>
+				        <input type="checkbox" id="chk1">
+				        <label for="chk1">Mec</label>
+				        <input type="checkbox" id="chk2">
+				        <label for="chk2">Elc</label>
+				        <input type="checkbox" id="chk3">
+				        <label for="chk3">I/E</label>
+				        <input type="checkbox" id="chk4">
+				        <label for="chk4">Otr</label>
+				    </fieldset>
+  					<label for="tmmtoOS"><strong>Tipo Mantenimiento</strong></label>
+						<select name="tmmtoOS" id="tmmtoOS">
+						   <option selected value="1">Correctivo</option>
+						   <option value="2">Preventivo</option>
+						   <option value="3">Predictivo</option>
+						   <option value="4">Calibracion</option>
+						   <option value="5">Lubricacion</option>
+						   <option value="6">Otro</option>
+						   <option value="7">Preventivo Manual</option>
+						</select>
+
+					<label><strong>Tipo Actividad</strong></label>
+	                    <input type="text" data-type="search" id="AME"  placeholder="Actividad Mmto" data-clear-btn="true"/>
+						<ul id="AMs" data-role="listview" data-filter="true" data-filter-reveal="false" class="autAM" data-input="#AME">
+					</ul>
+	   	</div>
+	   	<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a id="guardarCierre" data-role="button" data-icon='check' onclick="guardarTip(7);">Guardar</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html> 

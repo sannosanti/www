@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+  <script src="../js/jquery-1.11.3.min.js"></script>
+  <script src="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+  <link rel="stylesheet" href="../css/themes/amovil.css" />
+  
+  <script type="text/javascript" src="../cordova.js"></script>    
+  <script src="../url.js" type="text/javascript"></script>
+  <script src="equipos.js" type="text/javascript"></script>
+  <title>Amovil</title>
+
+  <script type="text/javascript">
+    $.support.cors                 = true;
+    $.mobile.allowCrossDomainPages = true;
+    $.mobile.pushStateEnabled      = false;
+
+    $(document).on("pageinit","#listaInv",function(){ 
+      window.isphone = false;
+      if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+      if(window.isphone){
+        document.addEventListener("deviceready", onDeviceReady, false);
+        document.addEventListener("deviceready", cargarEnc, false);
+        document.addEventListener("deviceready", cargarInventario, false);
+      } else {
+        onDeviceReady();
+        cargarEnc();
+        cargarInventario();
+      }
+    });
+
+    function cargarEnc(){
+      var ajax_data = {'id': localStorage.compania, 'codInv': $_GET("codInv") };
+      $.ajax({  
+        type       : 'GET',
+        url        : uri + '/invencabezado',
+        crossDomain: true,
+        beforeSend : function() {$.mobile.loading('show')},
+        complete   : function() {$.mobile.loading('hide')},
+        data       : ajax_data,
+        dataType   : 'json',
+        success    : function(response) {
+                      if(response.length == 0){alert('Ocurrió un error');}else{$('#titulo').html(response);}
+                    },
+        error      : function(xhr, ajaxOptions, thrownError) {alert('Error 1! ' + ajaxOptions + ' Status = ' + xhr.status );}
+      });
+    }
+
+    function leer(){
+      cordova.plugins.barcodeScanner.scan(
+        function (result) {
+          if(result.text != '' && result.cancelled != true){
+            $("#codigo").val(result.text);
+            BuscarInv();
+          }else{
+            $("#codigo").val('');
+            $("#codigo").focus();
+          }
+        }, 
+        function (error) {
+          alert("Scanning failed: " + error);
+        }
+      );
+    }
+
+    function cargarInventario(){
+      $('#tblDetalleInv li').remove(); 
+      var ajax_data = {'codigo': $('#codigo').val(), 'parametro': $('#parametro').val(), 
+                       'compania': localStorage.compania, 'idInv': $_GET("codInv"), 'diferenciador': 0};
+      $.ajax({
+        type       : 'GET',
+        url        : uri + '/inventario',
+        crossDomain: true,
+        beforeSend : function() {$.mobile.loading('show')},
+        complete   : function() {$.mobile.loading('hide')},
+        data       : ajax_data,
+        dataType   : 'json',
+        success    : function(response) {
+                      if(response.length == 0){}
+                      else{
+                                                     
+                        var linkEstado = "";
+                        var newRows = '';
+                        $('#total').html("Total: " + response.length);
+                        $.each(response, function (key, item) {
+                          var colorEstado = "";
+                          if (item.estadoInv == 'Error' || item.estadoInv == 'Inactivo'){
+                            colorEstado = "red";
+                            linkEstado = '<a href="EditarActivosInv.html?cod=' + item.eq + '&idInv= '+  $_GET("codInv") +'" data-ajax="false" data-rel="external">';
+                          }else{
+                            linkEstado = '<a href="#"">';
+                            colorEstado = "green";
+                          }
+
+                          newRows = newRows + '<li>'
+                            + linkEstado
+                            + '<div class="div-color-'+ colorEstado +'">&nbsp;</div>' 
+                            + '<h2>' + item.estadoInv + ' - ' + item.activoFijo + '</h2>'
+                            + '<p> <strong>' + item.codActivo + ' | ' + item.descripcion  +'</strong></p>'
+                            + '<p> <strong>' + item.ubicacionFisica + '</strong></p>'
+                            + '<p> <strong>' + item.estadoAnterior + '</strong></p>'
+                            + '</a>'
+                          + '</li>';
+                        });
+                      $('#tblDetalleInv').listview().append( newRows).listview("refresh").trigger("create");
+                      }
+                      $("#codigo").val('');
+                      $("#codigo").focus();
+                    },
+        error      : function(xhr, ajaxOptions, thrownError) {
+                      alert("errorstatus: 2 " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                    }
+      });
+    }
+
+    function BuscarInv() {
+      checkConnection();
+      $('#tblDetalleInv li').remove(); 
+      var ajax_data = {'codigo': $('#codigo').val(), 'parametro': $('#parametro').val(), 
+                       'compania': localStorage.compania, 'idInv': $_GET("codInv"), 'diferenciador': 0};
+      $.ajax({
+        type       : 'GET',
+        url        : uri + '/inventario',
+        crossDomain: true,
+        beforeSend : function() {$.mobile.loading('show')},
+        complete   : function() {$.mobile.loading('hide')},
+        data       : ajax_data,
+        dataType   : 'json',
+        success    : function(response) {
+                      var bandera = false;
+                      var linkEstado = "";
+                      $('#total').html("Total: " + response.length);
+                      var newRows = '';
+
+                      $.each(response, function (key, item) {
+                        if($('#parametro').val() == 0){if(item.codActivo.toUpperCase() == $('#codigo').val().toUpperCase()){ bandera = true;}}
+                        if($('#parametro').val() == 1){if(item.referencia.toUpperCase() == $('#codigo').val().toUpperCase()){ bandera = true;}}
+                        if($('#parametro').val() == 2){if(item.activoFijo.toUpperCase() == $('#codigo').val().toUpperCase()){ bandera = true;}}
+                        if($('#parametro').val() == 3){if(item.serial.toUpperCase() == $('#codigo').val().toUpperCase()){ bandera = true;}}
+                        if($('#parametro').val() == 4){if(item.alias.toUpperCase() == $('#codigo').val().toUpperCase()){ bandera = true;}}
+                          
+
+                        var colorEstado = "";
+                        if (item.estadoInv == 'Error' || item.estadoInv == 'Inactivo'){
+                          colorEstado = "red";
+                          linkEstado = '<a href="EditarActivosInv.html?cod=' + item.eq + '&idInv= '+  $_GET("codInv") +'" data-ajax="false" data-rel="external">';
+                        }else{
+                          linkEstado = '<a href="#"">';
+                          colorEstado = "green";
+                        }
+                        newRows = newRows + '<li>'
+                            + linkEstado
+                            + '<div class="div-color-'+ colorEstado +'">&nbsp;</div>' 
+                            + '<h2>' + item.estadoInv + ' - ' + item.activoFijo + '</h2>'
+                            + '<p> <strong>' + item.codActivo + ' | ' + item.descripcion  +'</strong></p>'
+                            + '<p> <strong>' + item.ubicacionFisica + '</strong></p>'
+                            + '<p> <strong>' + item.estadoAnterior + '</strong></p>'
+                            + '</a>'
+                          + '</li>';
+                      });
+                      $('#tblDetalleInv').listview().append( newRows).listview("refresh").trigger("create");
+
+                      if(bandera == false){
+                          var confirmar=confirm("EL item "+ $('#codigo').val().toUpperCase() +" no se encuentra en el inventario. Desea Agregarlo?");
+                          if(confirmar){
+                            buscarEnTablaEQ();
+                          }
+                      }
+                      $("#codigo").val('');
+                      $("#codigo").focus();
+                    },
+              error      : function(xhr, ajaxOptions, thrownError) {
+                            alert("errorstatus: 3 " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                          }
+      });
+    }
+
+   function buscarEnTablaEQ(){
+      checkConnection();
+      $('#tblDetalleInv li').remove(); 
+      var codigo =  $('#codigo').val();
+      var ajax_data = {'codigo': codigo, 'parametro': $('#parametro').val(), 
+                           'compania': localStorage.compania, 'idInv': $_GET("codInv"), 'diferenciador': 1};
+      $.ajax({
+        type       : 'GET',
+        url        : uri + '/inventario',
+        crossDomain: true,
+        beforeSend : function() {$.mobile.loading('show')},
+        complete   : function() {$.mobile.loading('hide')},
+        data       : ajax_data,
+        dataType   : 'json',
+        success    : function(response) {
+                      var bandera = true;
+                      var codEqActualizar = "";
+                      var existeEQ = false;
+                      $.each(response, function (key, item) {
+
+                        if($('#parametro').val() == 0){
+                          if(item.codActivo.toUpperCase() == codigo.toUpperCase()){ 
+                            if (item.estadoInv == 'Modificado' || item.estadoInv == 'Inactivo'){bandera = true;
+                            }else{bandera = false;}
+                            existeEQ = true;
+                            codEqActualizar = item.eq;
+                          }
+                        }
+                       if($('#parametro').val() == 1){
+                          if(item.referencia.toUpperCase() == codigo.toUpperCase()){ 
+                            if (item.estadoInv == 'Modificado' || item.estadoInv == 'Inactivo'){bandera = true;
+                            }else{bandera = false;}
+                            existeEQ = true;
+                            codEqActualizar = item.eq;
+                          }
+                       }
+                       if($('#parametro').val() == 2){
+                          if(item.activoFijo.toUpperCase() == codigo.toUpperCase()){ 
+                            if (item.estadoInv == 'Modificado' || item.estadoInv == 'Inactivo'){bandera = true;
+                            }else{bandera = false;}
+                            existeEQ = true;
+                            codEqActualizar = item.eq;
+                          }
+                       }
+                       if($('#parametro').val() == 3){
+                          if(item.serial.toUpperCase() == codigo.toUpperCase()){ 
+                            if (item.estadoInv == 'Modificado' || item.estadoInv == 'Inactivo'){bandera = true;
+                            }else{bandera = false;}
+                            existeEQ = true;
+                            codEqActualizar = item.eq;
+                          }
+                       }
+                       if($('#parametro').val() == 4){
+                          if(item.alias.toUpperCase() == codigo.toUpperCase()){ 
+                            if (item.estadoInv == 'Modificado' || item.estadoInv == 'Inactivo'){bandera = true;
+                            }else{bandera = false;}
+                            existeEQ = true;
+                            codEqActualizar = item.eq;
+                          }
+                       }
+                    });
+
+                    if(existeEQ == false){
+                     var confirmar1=confirm(" El item no existe en la base de datos. Desea agregarlo al sistema?");
+                     if(confirmar1){document.location.href = 'insertarEquipo.html?codActFijo=' + codigo;}
+                    }
+                    if(bandera == false){
+                       var confirmar=confirm("Desea modificar el item "+ codigo.toUpperCase());
+                       if(confirmar){
+                          document.location.href = 'EditarActivosInv.html?cod=' + codEqActualizar + '&idInv='+ $_GET("codInv");
+                       }
+                    }
+                    cargarInventario();
+                            
+                    $("#codigo").val('');
+                    $("#codigo").focus();
+                    },
+          error      : function(xhr, ajaxOptions, thrownError) {
+                        alert("errorstatus: 4 " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                      }
+      });
+   }
+
+        function cerrarInv() {
+          var confirmar=confirm(" Desea cerrar este inventario?");
+            if(confirmar){
+                checkConnection();
+                $.ajax({
+                  type       : 'PUT',
+                  url        : uri + '/invencabezado/'+$_GET("codInv"),
+                  crossDomain: true,
+                  beforeSend : function() {$.mobile.loading('show')},
+                  complete   : function() {$.mobile.loading('hide')},
+                //  data       : ajax_data,
+                  dataType   : 'json',
+                  success    : function(response) {
+                                if(response == "OK"){alert('Inventario cerrado correctamente');document.location.href = 'menuInvFisico.html';
+                                }else{alert('Ha ocurrido un error');}
+                              },
+                  error      : function(xhr, ajaxOptions, thrownError) {
+                                  alert("errorstatus: 5 " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                              }
+                });
+            }
+        }
+
+         function eliminarInv() {
+          var confirmar=confirm(" Desea eliminar este inventario?");
+            if(confirmar){
+                checkConnection();
+                $.ajax({
+                    type       : 'DELETE',
+                    url        : uri + '/invencabezado/'+$_GET("codInv"),
+                    crossDomain: true,
+                    beforeSend : function() {$.mobile.loading('show')},
+                    complete   : function() {$.mobile.loading('hide')},
+                  //  data       : ajax_data,
+                    dataType   : 'json',
+                    success    : function(response) {
+                                  if(response == "OK"){alert('Inventario Eliminado correctamente');document.location.href = 'menuInvFisico.html';
+                                  }else{alert('Ha ocurrido un error');}
+                                },
+                    error      : function(xhr, ajaxOptions, thrownError) {
+                                    alert("errorstatus: 6 " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                                }
+                  });
+            }   
+        }
+    </script>
+</head>
+<body>
+
+    <div data-role="page" data-mini="true" id="listaInv">
+        <div data-role="header" data-position="fixed"  data-tap-toggle="false">
+            <a href='#' data-rel="back" class="back-btn" data-role='button' data-icon="back" data-iconpos='notext'></a>
+            <h1 id="titulo">Inventario</h1>
+            <a onclick="leer();" data-role="button" id="leerCam" data-iconpos='notext' data-icon="camera" class="ui-btn-right"></a>
+        </div>
+
+        <div data-role="content">
+            <ul data-role="listview" data-inset="true">
+                <li data-role="fieldcontain">
+                    <label for="parametro" class="select"><strong>Buscar por:</strong></label>
+                    <select name="parametro" id="parametro">
+                        <option value="0">C&oacute;digo</option>
+                        <option value="1">Referencia</option>
+                        <option value="2" selected>Num AF</option>
+                        <option value="3">Serial</option>
+                        <option value="4">Alias</option>
+                    </select>
+                </li>
+                <li data-role="fieldcontain">
+                    <label for="codigo"><strong>Valor</strong></label>
+                    <input autofocus type="text" name="codigo" id="codigo" value="" data-clear-btn="true" placeholder="Valor" onchange="BuscarInv();" />
+                </li>
+            </ul>
+            <center><button id="buscar" data-inline='true' onclick="BuscarInv();" data-icon="search">Buscar</button></center>
+
+            <div class='inset'>
+              <h3 id="total"></h3>
+              <ul data-role="listview" data-inset="false" data-icon="false" id="tblDetalleInv"></ul>
+            </div>
+            <div data-role="footer" data-id="footer" data-position="fixed"> 
+              <div data-role="navbar">
+                <ul>
+                  <li><a data-role="button" id="buscar" onclick="cerrarInv();" data-icon="check">Cerrar Inventario</a></li>
+                  <li><a data-role="button" id="eliminar" onclick="eliminarInv();" data-icon="delete">Eliminar Inventario</a></li>
+                </ul>
+              </div>
+            </div> 
+        </div>
+    </div>
+</body>
+</html>

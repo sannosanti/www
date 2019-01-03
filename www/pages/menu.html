@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="indigo">
+
+        <title>AMovil - Interface</title>
+
+        <link rel="stylesheet" href="../node_modules/framework7/css/framework7.material.min.css">
+        <link rel="stylesheet" href="../node_modules/framework7/css/framework7.material.colors.min.css">
+        <link rel="stylesheet" href="../node_modules/framework7/css/framework7-icons.css">
+        <link rel="stylesheet" href="../css/index.css">
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBADj92ANN7hhdt4x7iOXt0xDaUCSlXI7c" async defer></script>
+    </head>
+    <body>
+        <span class="progressbar-infinite"></span>
+
+        <div class="panel-overlay"></div>
+        <div class="content-overlay" id="map-overlay"></div>
+
+        <div class="panel panel-left panel-cover">
+            <div class="content-block">
+                <div valign="bottom" class="head-menu theme-amovil color-white no-border">
+                    <div class="center width-mid center-full">
+                        <img src="../img/amovil-nav.png" id="icon-nav-amovil">
+                    </div>
+                    <div class="head-info">
+                        <div><h4>Usuario: &nbsp;&nbsp;&nbsp;</h4><p id="user"></p></div>
+                        <div><h4>Compañia: </h4><p id="company"></p></div>
+                    </div>
+                </div>
+                <div class="list-block">
+                    <ul>
+                        <li class="item-content" id="Sesions">
+                            <div class="item-media"><i class="f7-icons">person</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Conectados</div>
+                                <div class="item-after"><span class="badge" id="connects">0</span></div>
+                            </div>
+                        </li>
+                        <li class="item-content" id="logout">
+                            <div class="item-media"><i class="f7-icons">logout</i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Atras</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="views" data-role="page" id="menu">
+            <div class="view view-main">
+                <div class="pages navbar-fixed">
+                    <div class="page" data-page="index">
+                        <div class="navbar theme-amovil">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a href="#" id="Menu" class="link icon-only">
+                                        <i class="icon icon-bars"></i>
+                                    </a>
+                                </div>
+                                <div class="center">Administración</div>
+                                <div class="right">
+                                    <a href="#" id="Search" class="link icon-only">
+                                        <i class="f7-icons size-mid">search_strong</i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="page-content hide-bars-on-scroll pull-to-refresh-content" data-ptr-distance="55" id="content-menu">
+                            <div class="pull-to-refresh-layer">
+                                <div class="preloader"></div>
+                                <div class="pull-to-refresh-arrow"></div>
+                            </div>
+                            <div class="content-block">
+                                <div class="list-block">
+                                    <ul id="list-login"></ul>
+                                </div>
+                                <div class="content-block"><!--Deslice hacia abajo para refrescar--></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page cached" data-page="map">
+                        <div class="navbar theme-amovil">
+                            <div class="navbar-inner">
+                                <div class="left">
+                                    <a href="#index" class="link icon-only back refreshSesion">
+                                        <i class="icon icon-back"></i>
+                                    </a>
+                                </div>
+                                <div class="center"><p id="nameUser"></p></div>
+                                <div class="right"></div>
+                            </div>
+                        </div>
+                        <div class="page-content hide-bars-on-scroll">
+                            <div class="content-block" id="content-map">
+                                <div id="map"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup popup-search">
+            <div class="toolbar theme-amovil">
+                <div class="toolbar-inner">
+                    <div class="left">
+                        <p class="margin-left">Buscar</p>
+                    </div>
+                    <div class="right">
+                        <a href="#" class="link close-popup" id="close-Search">
+                            <i class="icon icon-close"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <a href="#" id="searchUF" class="floating-button color-amovil close-popup">
+                <i class="icon f7-icons">check</i>
+            </a>
+            <div class="content-block">
+                <div class="content-block-title">Filtrar por</div>
+                <form id="formSearch" class="list-block">
+                    <ul><li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon f7-icons">person</i></div>
+                            <div class="item-inner">
+                                <div class="item-input">
+                                    <input type="text" name="login" placeholder="Usuario">
+                                </div>
+                            </div>
+                        </div>
+                    </li></ul>
+                    <ul><li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon f7-icons">calendar</i></div>
+                            <div class="item-inner">
+                                <div class="item-title label">Fecha</div>
+                                <div class="item-input">
+                                    <input type="date" name="dia">
+                                </div>
+                            </div>
+                        </div>
+                    </li><li>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon f7-icons">timer</i></div>
+                            <div class="item-inner">
+                                <div class="item-title label">Hora</div>
+                                <div class="item-input">
+                                    <input type="time" name="hora">
+                                </div>
+                            </div>
+                        </div>
+                    </li></ul>
+                    <ul><li class="align-top">
+                        <div class="item-content">
+                            <div class="item-media pT14"><i class="icon f7-icons">compass</i></div>
+                            <div class="item-inner">
+                                <div class="item-input h80">
+                                    <textarea class="resizable h80" name="lugar" placeholder="Lugar"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </li></ul>
+                </form>
+            </div>
+        </div>
+
+        <div class="picker-modal picker-sesion">
+            <div class="toolbar theme-amovil">
+                <div class="toolbar-inner">
+                    <div class="left">
+                        <p class="margin-left">Conectados</p>
+                    </div>
+                    <div class="right">
+                        <a href="#" id="close-sesions" class="link close-picker">
+                            <i class="icon icon-close"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="picker-modal-inner">
+                <div class="content-block">
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="list-block">
+                                <ul id="connects-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bottom-refresh">
+                        <a href="#" class="link refreshSesion">
+                            <i class="f7-icons">reload</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="../node_modules/framework7/js/framework7.min.js"></script>
+        <script type="text/javascript" src="../node_modules/framework7/js/my-app.js"></script>
+        <script type="text/javascript" src="../node_modules/jquery/dist/jquery-1.11.3.min.js"></script>
+        <script type="text/javascript" src="../node_modules/jquery/dist/jquery.mobile-1.4.5.min.js"></script>
+        <script type="text/javascript" src="../cordova.js"></script>
+        <script type="text/javascript" src="../js/url.js"></script>
+        <script type="text/javascript" src="../js/index.js"></script>
+        <script type="text/javascript" src="../js/swipe.js"></script>
+        <script type="text/javascript" src="../js/menu.js"></script>
+        <script type="text/javascript" src="../js/events.js"></script>
+    </body>
+</html>

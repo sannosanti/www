@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+            -->
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" href="js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+            <script src="js/jquery-1.11.3.min.js"></script>
+            <script src="js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+
+            <script type="text/javascript" src="cordova.js"></script>
+            <link rel="stylesheet" href="css/themes/amovil.css" />
+
+            <script type="text/javascript" src="url.js"></script>
+
+            <script type="text/javascript">
+                $.support.cors                 = true;
+                $.mobile.allowCrossDomainPages = true;
+                $.mobile.pushStateEnabled      = false;
+
+                $(document).on('pageinit','#logon', function(){
+                    window.isphone = false;
+                    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
+                        window.isphone = true;
+                    }
+                    if(window.isphone) {
+                        document.addEventListener("deviceready", onDeviceReady, false);
+                        document.addEventListener("deviceready", cargarCompanias, false);
+                        //document.addEventListener("deviceready",onDeviceR,false);
+
+
+                    } else {
+                        onDeviceReady();
+                        cargarCompanias();
+                    }
+                });
+
+
+                function cargarCompanias() {
+                    $.ajax({
+                        type       : 'GET',
+                        url        : uri + '/login',
+                        crossDomain: true,
+                        beforeSend : function() {$.mobile.loading('show')},
+                        complete   : function() {$.mobile.loading('hide')},
+                        dataType   : 'json',
+                        success    : function(response) {
+                            $.each(response, function (key, item) {
+                               $('<option>', { text: item.nitcy, value: item.idecy }).appendTo($('#company'));
+                           });
+                            $('#company').selectmenu("refresh", true);
+                        },
+                        error      : function(xhr, ajaxOptions, thrownError) {
+                            $('#company').selectmenu("refresh", true);
+                            alert("ERROR: no se encuentra ninguna compa\u00f1\u00eda");
+                        }
+                    });
+                }
+
+                function Validar() {
+                    checkConnection();
+                    var ajax_data = {'compania': $('#company').val(), 'usuario': $('#userName').val(), 'password': $('#pwd').val()};
+                    $.ajax({
+                        type       : 'GET',
+                        url        : uri + '/login',
+                        crossDomain: true,
+                        beforeSend : function() {$.mobile.loading('show')},
+                        complete   : function() {$.mobile.loading('hide')},
+                        data       : ajax_data,
+                        dataType   : 'json',
+                        success    : function(response) {
+                            $('#error').text(response);
+                            if (response == 'Usuario Encontrado'){
+                                //valida si no hay cookies de inicio de sesion
+                                if(typeof(Storage)!=="undefined") {
+                                    localStorage.usuario= $('#userName').val();
+                                    localStorage.compania= $('#company').val();
+                                }
+                                document.location.href = 'Menu.html';
+                                               // $.mobile.changePage('Menu.html', {transition: "pop", reverse: false}, false);
+                                           }else{
+                                            console.error(JSON.stringify(response));
+                                        }
+                                    },
+                                    error      : function(xhr, ajaxOptions, thrownError) {
+                                        alert(response);
+                                        console.error(JSON.stringify(response));
+                                    }
+                                });
+                }
+
+
+                //First step check parameters mismatch and checking network connection if available call    download function
+                function downloadFile() {
+                    var url = uri+"/upload/3453.pdf";
+                    var Folder_Name = "Amovil";
+                    var File_Name = "3453";
+                    download(url, Folder_Name, File_Name); //If available download function call
+                }
+
+
+                function download(URL, Folder_Name, File_Name) {
+                    //step to request a file system 
+                    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
+
+                    function fileSystemSuccess(fileSystem) {
+                        var download_link = encodeURI(URL);
+                        ext = download_link.substr(download_link.lastIndexOf('.') + 1); //Get extension of URL
+                        download_link = download_link.substr(0,download_link.lastIndexOf('.'))
+
+                        var directoryEntry = fileSystem.root; // to get root path of directory
+                        directoryEntry.getDirectory(Folder_Name, { create: true, exclusive: false }, onDirectorySuccess, onDirectoryFail); // creating folder in sdcard
+                        var rootdir = fileSystem.root;
+                        var fp = rootdir.toURL(); // Returns Fulpath of local directory
+
+                        fp = fp + File_Name + "." + ext; // fullpath and name of the file which we want to give
+                        // download function call
+                        filetransfer(download_link, fp);
+                    }
+
+                    function onDirectorySuccess(parent) {
+                        // Directory created successfuly
+                    }
+                    function onDirectoryFail(error) {
+                        //Error while creating directory
+                        alert("Unable to create new directory: " + error.code);
+                    }
+
+                    function fileSystemFail(evt) {
+                        //Unable to access file system
+                        alert(evt.target.error.code);
+                    }
+                }
+
+
+
+                function filetransfer(download_link, fp) {
+                    var fileTransfer = new FileTransfer();
+                    alert("download_link : " + download_link);
+                    alert("fp : " + fp);
+                    // File download function with URL and local path
+                    fileTransfer.download(download_link, fp,
+                        function (entry) {
+                            alert("download complete: " + entry.toURL());
+                        },
+                        function (error) {
+                             //Download abort errors or download failed errors
+                             alert("download error source " + error.source);
+                             alert("download error target " + error.target);
+                             alert("upload error code" + error.code);
+                         }
+                         );
+                }
+
+
+
+
+
+            </script>
+            <title>Amovil</title>
+        </head>
+        <body>
+            <div id="logon" data-role="page">
+                <div data-role="header" data-position="fixed"  data-tap-toggle="false">
+                    <h1>Login</h1>
+                </div>
+                <div data-role="content">
+                    <div data-role="fieldcontain">
+                        <label for="company" class="select" data-mini="true"><strong>Compa&ntilde;&iacute;a</strong></label>
+                        <select name="company" id="company"><option value="0">Selecione una compa&ntilde;&iacute;a</option></select>
+                    </div>
+                    <div data-role="fieldcontain">
+                        <label data-mini="true"><strong>Cuenta</strong></label>
+                        <input type="text" id="userName" name="userName" value="" data-clear-btn="true" placeholder="Usuario"/>
+                        <input type="password" id="pwd" name="pwd" value="" data-clear-btn="true" placeholder="Contrase&ntilde;a"/><br>
+                        <div class"btnam" data-mini="true">
+                            <a data-role="button" data-inline='false' id="ingresar" onclick="Validar();">Ingresar</a>
+                        </div>
+                       <!-- <a data-role="button" data-inline='false' id="ingresar" onclick="downloadFile();" data-icon="check" data-iconpos="right">descargar  </a>
+                   -->
+               </div>
+               <p id="error" style="color:red;"></p>
+           </div>
+       </div>
+   </body>
+   </html>

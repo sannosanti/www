@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+	<script src="../js/jquery-1.11.3.min.js"></script>
+	<script src="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+	<link rel="stylesheet" href="../css/themes/amovil.css" />
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="../cordova.js"></script>
+	<script src="../url.js" type="text/javascript"></script>
+	<script src="equipos.js" type="text/javascript"></script>
+	<script src="../panel.js" type="text/javascript"></script>
+	<title>Amovil</title>
+
+	<script type="text/javascript">
+		$.support.cors                 = true;
+		$.mobile.allowCrossDomainPages = true;
+		$.mobile.pushStateEnabled      = false;
+
+		$(document).on('pageinit','#cambioResponsable', function(){ 
+			window.isphone = false;
+			if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+			if(window.isphone){
+				document.addEventListener("deviceready", onDeviceReady, false);
+				document.addEventListener("pause", onResume, false);
+			} else {
+				onDeviceReady();
+				onResume();
+            }
+			
+			$('#liresp').hide();
+			$('#liUF').hide();
+			$('#liCC').hide();
+			$('#liValor').hide();
+			$('#parametro').change();
+		});
+
+		$(document).on('pageinit','#guardarRSP', function(){ cargarForm('Resp');});
+		$(document).on('pageinit','#guardarUF', function(){ cargarForm('UF');});
+		$(document).on('pageinit','#guardarEst', function(){ cargarForm('Est');});
+		$(document).on('pageinit','#guardarCC', function(){ cargarForm('CC');});
+
+		function cargarForm(tipo){
+			window.isphone = false;
+			if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {window.isphone = true;}
+
+			if(window.isphone) {
+				document.addEventListener("deviceready", onDeviceReady, false);
+				if(tipo=='Resp'){document.addEventListener("deviceready", cargarResponsables, false);
+			}else if (tipo == 'UF'){document.addEventListener("deviceready", cargarUF, false);
+		}else if (tipo == 'Est'){document.addEventListener("deviceready", cargarEstados, false);
+	}else if (tipo == 'CC'){document.addEventListener("deviceready", cargarCC, false);}
+} else {
+	onDeviceReady();
+	if(tipo=='Resp'){cargarResponsables();
+	}else if (tipo == 'UF'){cargarUF();
+	}else if (tipo == 'Est'){cargarEstados();
+	}else if (tipo == 'CC'){cargarCC();}
+}
+}
+
+$(document).on('change', '#parametro', function(e) {
+	$("#liresp").hide();
+	$("#liUF").hide();
+	$("#liCC").hide();
+	$("#liValor").hide();
+	$("#rsp").val('');
+	$("#UF").val('');
+	$("#CC").val('');
+
+	var opcion = $('#parametro :selected').val();
+	if (opcion == 6){$("#liresp").show();cargarRes();
+}else{
+	if (opcion == 9){$("#liUF").show();cargarUFisica();
+}else{
+	if (opcion == 8){$("#liCC").show();cargarCCosto();
+}else{$("#liValor").show();}
+}
+}	
+});
+
+$(document).on('change', '#filt', function(e) {
+	var opcion = $('#filt :selected').val();
+	if (opcion == 0){ BuscarEquipoActualizar(0);}
+	if (opcion == 1){ BuscarEquipoActualizar(1);}
+});
+
+function preparaGuardar(tipo){
+	var myArray = [];
+      
+      myArray.push(localStorage.compania);
+	  myArray.push(localStorage.usuario);
+
+	if (tipo == 'Resp'){myArray.push($('#filterable-input').val());	myArray.push('1');
+}else if(tipo == 'UF'){myArray.push($('#UF').val());myArray.push('2');
+}else if(tipo == 'Tipo'){myArray.push($('#nTipo').val());myArray.push('3');
+}else if(tipo == 'Est'){myArray.push($('#nEstado').val());myArray.push('4');
+}else if(tipo == 'CC'){myArray.push($('#CC').val());myArray.push('5');
+}
+
+var i = 0;
+$("#tblDetalleEquipo li").each(function (index) {
+	var row = $(this);
+	if (row.find('input[type="checkbox"]').is(':checked')) {
+		myArray.push(row.find('input[type="hidden"]').val());
+		i = i +1;
+	}
+});
+var letrero = "";
+if (tipo == 'Resp'){
+	letrero = "Desea cambiar el responsable de "+ i +" items a  "+$('#filterable-input').val()+"?";
+}else if(tipo == 'UF'){
+	letrero = "Desea cambiar la UF de "+ i +" items a  "+$('#UF').val()+"?";
+}else if(tipo == 'Tipo'){
+	letrero = "Desea cambiar el tipo de "+ i +" items a  "+$('#nTipo').val()+"?";
+}else if(tipo == 'Est'){
+	letrero = "Desea cambiar el estado de "+ i +" items";
+}else if(tipo == 'CC'){
+	letrero = "Desea cambiar el Centro de costos de "+ i +" items a  "+$('#CC').val()+"?";
+}
+
+var confirmar1=confirm(letrero);
+if(confirmar1== false){	document.location.href = '#cambioResponsable';
+}else{
+	checkConnection();
+	var ajax_data = {'': myArray};
+	$.ajax({
+		type       : 'PUT',
+		url        : uri + '/actualizar/',
+		crossDomain: true,
+		beforeSend : function() {$.mobile.loading('show')},
+		complete   : function() {$.mobile.loading('hide')},
+		data       : ajax_data,
+		success    : function(response) {
+			if (response == 'ok'){
+				alert('Se actualizaron '+ i +' equipos');
+				BuscarEquipoActualizar($('#parametro :selected').val());
+			}else{
+				alert(response);
+			}
+				document.location.href = '#cambioResponsable';
+		},
+		error      : function(xhr, ajaxOptions, thrownError) {
+			alert('Error! ' + ajaxOptions + ' Status = ' + xhr.status);
+		}
+	});
+}
+}
+
+function guardarCCs(){if(validarCC()){preparaGuardar('CC');}}
+function guardarEstados(){preparaGuardar('Est');}
+function guardarTipos(){preparaGuardar('Tipo');}
+function guardarUFs(){if(validarUF()){preparaGuardar('UF');}}
+function guardar(){if(validarResponsable()){preparaGuardar('Resp');}}
+function validarCheck(){
+	var i = 0;
+	$("#tblDetalleEquipo li").each(function (index) {
+	var row = $(this);
+		if (row.find('input[type="checkbox"]').is(':checked')) {
+			i = i +1;
+		}
+	});
+	if(i !== 0){
+		document.location.href="#MenuEditar";
+	}else{
+		navigator.notification.alert(
+	      'Seleccione los equipos a Modificar',
+	      alertDismissed,
+	      'AMovil',
+	      'Ok'
+	    );
+	}
+	
+}
+
+			document.addEventListener("backbutton", function (e) {
+				atras();
+			}, false);
+
+			function atras(){
+				document.location.href = 'menuGenActivo.html';
+			}
+</script>
+</head>
+<body>
+
+	<div data-role="page" data-mini="true" id="cambioResponsable">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href='#' onclick="atras();" class="back-btn" data-role='button' data-icon="back" data-iconpos='notext'></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Actualizar Masivo</span></h1>
+		</div>
+		<div data-role="content">
+			<ul data-role="listview" data-inset="true" class="subgrupo" >
+				<div data-role="fieldcontain">
+					<label for="parametro" class="select"><strong>Buscar por:</strong></label>
+					<select name="parametro" id="parametro">
+						<option value="0">C&oacute;digo AC</option>
+						<option value="1">Referencia</option>
+						<option value="2">Num AF</option>
+						<option value="3">Serial</option>
+						<option value="4">Alias</option>
+						<option value="5">Descripci&oacute;n</option>
+						<option value="6">Encargado</option>
+						<option value="7">Tipo</option>
+						<option value="8">Centro de Costo</option>
+						<option value="9">Ubicaci&oacute;n F&iacute;sica</option>
+					</select>
+				</div>
+				<div data-role="fieldcontain" id="liresp">
+					<label for="rsp"><strong>Encargado</strong></label>
+					<input type="text" data-type="search" id="rsp" >
+					<ul id="Res" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteRes" data-input="#rsp"></ul>
+				</div>
+				<div data-role="fieldcontain" id="liUF">
+					<label for="UFisica"><strong>Ubicaci&oacute;n F&iacute;sica</strong></label>
+					<input type="text"  data-type="search" id="UFisica" />
+					<ul id="UFisicalist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFisica" data-input="#UFisica"></ul>
+				</div>
+				<div data-role="fieldcontain" id="liCC">
+					<label for="CCosto"><strong>Centro de Costo</strong></label>
+					<input type="text" data-type="search" id="CCosto" />
+					<ul id="cclist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autoCCosto" data-input="#CCosto">
+					</ul>
+				</div>
+				<div data-role="fieldcontain" id="liValor">
+					<label for="codigo"><strong>Valor</strong></label>
+					<input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+				</div>
+				<div data-role="fieldcontain" id="">
+					<label for="filt"><strong>Ordenar Por:</strong></label>
+					<select name="filt" id="filt" data-mini="true">
+						<option value="0">Código Mantenimiento</option>
+						<option value="1">Código Activo Fijo</option>
+					</select>
+				</div>
+				<h3 id="total"></h3>
+			</ul>
+			<center><button id="buscar" data-inline='true' onclick="BuscarEquipoActualizar(0);" data-icon="search">Buscar</button></center>
+			<div class="inset" hidden>
+				
+				<input type="checkbox" name="chkGeneral" id="chkGeneral" data-wrapper-class="ui-mini" onclick="seleccionarTodo();">
+				<label for="chkGeneral"><strong>Seleccionar Todos</strong></label>
+				<ul data-role="listview" data-inset="true">
+					<label for="filt"><strong>Filtrar Por:</strong></label>
+					<ul data-role="listview" data-inset="false" data-icon="false" id="tblDetalleEquipo" data-filter="true" data-icon="false" data-filter-placeholder="Filtrar">
+					</ul>
+				</ul>
+			</div>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed"> 
+			<div data-role="navbar">
+				<ul>
+					<li><a data-role="button" id="buscar" onclick="validarCheck();" data-ajax="false" data-icon="edit">Definir Modificación</a></li>
+				</ul>
+			</div>
+		</div> 
+	</div>
+	
+	<div data-role="page" id="MenuEditar" data-title="Actualizar Activos">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Modificar campos</span></h1>
+		</div>
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true" id="Ul1" data-icon="false">
+				<li data-role="fieldcontain"><a href="#guardarRSP" data-transition="slide" data-ajax="false" >Modificar el Encargado</a></li>
+				<li data-role="fieldcontain"><a href="#guardarUF" data-transition="slide" data-ajax="false">Modificar la Ubicaci&oacute;n F&iacute;sica</a></li>
+				<li data-role="fieldcontain"><a href="#guardarTipo" data-transition="slide" data-ajax="false">Modificar el Tipo</a></li>
+				<li data-role="fieldcontain"><a href="#guardarEst" data-transition="slide" data-ajax="false">Modificar el Estado</a></li>
+				<li data-role="fieldcontain"><a href="#guardarCC" data-transition="slide" data-ajax="false">Modificar el Centro de Costo</a></li>
+			</ul>
+		</div>
+	</div>
+	
+	<!----------------- RESPONSABLE ---------------------------->
+	
+	<div data-role="page" id="guardarRSP" data-title="Cambio Responsable">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Encargado</span></h1>
+		</div>
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true">
+				<div data-role="fieldcontain">
+					<label for="filterable-input"><strong>Nuevo Encargado</strong></label>
+					<input type="text" data-type="search" id="filterable-input" >
+					<ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+				</div>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><button id="guardar" data-inline='true' onclick="guardar();" data-icon="check">Realizar cambio</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
+	<div data-role="page" id="guardarUF" data-title="Cambio Ubicacion">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Ubicaci&oacute;n F&iacute;sica</span></h1>
+		</div>
+
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true">
+				<div data-role="fieldcontain">
+					<label for="UF"><strong>Nueva Ubicaci&oacute;n F&iacute;sica</strong></label>
+					<input type="text"  data-type="search" id="UF" />
+					<ul id="UFlist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFs" data-input="#UF"></ul>
+				</div>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><button id="guardarUFi" data-inline='true' onclick="guardarUFs();" data-icon="check">Realizar cambio</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
+	<div data-role="page" id="guardarTipo" data-title="Cambio Tipo">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Tipo</span></h1>
+		</div>
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true">
+				<div data-role="fieldcontain">
+					<label for="nTipo"><strong>Nuevo Tipo</strong></label>
+					<input type="text" name="nTipo" id="nTipo" value="" data-clear-btn="true"  />
+				</div>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><button id="guardarTip" data-inline='true' onclick="guardarTipos();" data-icon="check">Realizar cambio</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
+	<div data-role="page" id="guardarEst" data-title="Cambio Estado">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Estado</span></h1>
+		</div>
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true">
+				<div data-role="fieldcontain">
+					<label for="nEstado"><strong>Nuevo Estado</strong></label>
+					<select name="nEstado" id="nEstado"></select>
+				</div>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><button id="guardarEst" data-inline='true' onclick="guardarEstados();" data-icon="check">Realizar cambio</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+	<div data-role="page" id="guardarCC" data-title="Cambio CC">
+		<div data-role="header" data-position="fixed" data-tap-toggle="false">
+			<a href="#" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="back" data-rel="back"></a>
+			<h1> <span class="breadcrumb">AMovil</span>  <span class="breadcrumb">Activos</span> <span class="breadcrumbNo">Centro de Costos</span></h1>
+		</div>
+		<div data-role="content">   
+			<ul data-role="listview" data-inset="true">
+				<div data-role="fieldcontain">
+					<label for="CC"><strong>Nuevo Centro de Costo</strong></label>
+					<input type="text" data-type="search" id="CC" />
+					<ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC"></ul>
+				</div>
+			</ul>
+		</div>
+		<div data-role="footer" data-id="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><button id="guardarCC" data-inline='true' onclick="guardarCCs();" data-icon="check">Realizar cambio</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

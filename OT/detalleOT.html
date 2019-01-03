@@ -1,0 +1,3348 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
+    <script src="../js/jquery-1.11.3.min.js"></script>
+    <script src="../js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.js"></script>
+    <link rel="stylesheet" href="../css/themes/amovil.css" />
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script src="../js/jspdf.js"></script>
+    <script src="../url.js" type="text/javascript"></script>
+    <script src="../general.js" type="text/javascript"></script>
+    <script src="../panel.js" type="text/javascript"></script>
+    <script type="text/javascript" src="../flashcanvas.js"></script>
+    <script src="../jSignature.min.js"></script>
+    <title>Amovil</title>
+
+    <script type="text/javascript">
+        $.support.cors = true;
+        $.mobile.allowCrossDomainPages = true;
+        $.mobile.pushStateEnabled = false;
+
+        var x, imagen, name, instots, eval = "",
+            tipoEval, ObjectRptMton;
+
+        $(document).on("pageinit", "#DetalleOT", function() {
+            window.isphone = false;
+            if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                window.isphone = true;
+            }
+            if (window.isphone) {
+                document.addEventListener("deviceready", onDeviceReady, false);
+                document.addEventListener("deviceready", buscarOT, false);
+                document.addEventListener("pause", onResume, false);
+            } else {
+                onDeviceReady();
+                buscarOT();
+                onResume();
+            }
+        });
+
+        function buscarOT() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    llenarInformacion(response);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {}
+            });
+
+        }
+
+        function llenarInformacion(response) {
+            $.each(response, function(key, item) {
+                $('#desc').html(item.DesOT);
+                $('#fecGen').html(item.FecGenOT);
+                $('#UF').html(item.UFOT + ' - ' + item.NomUF);
+                $('#pIdeEQ').html(item.IDEEQ + ' - ' + item.DESEQ);
+                $('#eq').val(item.EQOT);
+
+                if (item.ComOT.indexOf("Comentario Evaluador:") !== -1) {
+                    $('#guardarEval').remove();
+                }
+                window.correctivoOT = item.TipoMantenimientoOT;
+            });
+        }
+
+        $(document).on('pageinit', '#ActualizaComentario', function() {
+            cargarForm('Com');
+        });
+        $(document).on('pageinit', '#ActualizaFechas', function() {
+            cargarForm('Fec');
+        });
+        $(document).on('pageinit', '#cargaArchivo', function() {
+            cargarForm('Anexo');
+        });
+        $(document).on('pageinit', '#ActualizaTipificacion', function() {
+            cargarForm('Tip');
+        });
+        $(document).on('pageinit', '#EvaluacionOT', function() {
+            cargarForm('Eval');
+        });
+        $(document).on('pageinit', '#CerrarOT', function() {
+            cargarForm('Cierre');
+        });
+        $(document).on('pageinit', '#ActualizaDesc', function() {
+            cargarForm('Desc');
+        });
+        $(document).on('pageinit', '#ActualizaEst', function() {
+            cargarForm('Est');
+        });
+        $(document).on('pageinit', '#Reporte', function() {
+            cargarForm('Reporte');
+        });
+
+        function cargarForm(tipo) {
+            window.isphone = false;
+            if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                window.isphone = true;
+            }
+            if (window.isphone) {
+                document.addEventListener("deviceready", onDeviceReady, false);
+                if (tipo == 'Com') {
+                    document.addEventListener("deviceready", cargarComentario, false);
+                } else if (tipo == 'Fec') {
+                    document.addEventListener("deviceready", cargarFecha, false);
+                } else if (tipo == 'Tip') {
+                    document.addEventListener("deviceready", cargarTipificacion, false);
+                } else if (tipo == 'Eval') {
+                    document.addEventListener("deviceready", cargarEvaluacion, false);
+                    document.addEventListener("deviceready", cargarPregEval, false);
+                } else if (tipo == 'Cierre') {
+                    document.addEventListener("deviceready", cargarCierre, false);
+                } else if (tipo == 'Desc') {
+                    document.addEventListener("deviceready", cargarDesc, false);
+                } else if (tipo == 'Anexo') {
+                    document.addEventListener("deviceready", cargarAnexos, false);
+                    document.addEventListener("deviceready", onDeviceR, false);
+                    document.addEventListener("deviceready", listaInstruc, false);
+                } else if (tipo == 'Reporte') {
+                    document.addEventListener("deviceready", cargarReporte, false);
+                    document.addEventListener("deviceready", cargarPregEval, false);
+                } else if (tipo == 'Est') {
+                    document.addEventListener("deviceready", cargarLosEstados, false);
+                    document.addEventListener("deviceready", cargarCP, false);
+                    $('#drpEstado').change(function() {
+                        var x = $('#drpEstado option[value="' + $(this).val() + '"]').text();
+
+                        if (x.indexOf('endiente') !== -1) {
+                            $('#pendiente').show();
+                        } else {
+                            $('#pendiente').hide();
+                        }
+                    });
+                }
+            } else {
+                onDeviceReady();
+                if (tipo == 'Com') {
+                    cargarComentario();
+                } else if (tipo == 'Fec') {
+                    cargarFecha();
+                } else if (tipo == 'Tip') {
+                    cargarTipificacion();
+                } else if (tipo == 'Eval') {
+                    cargarEvaluacion();
+                    cargarPregEval();
+                } else if (tipo == 'Cierre') {
+                    cargarCierre();
+                } else if (tipo == 'Desc') {
+                    cargarDesc();
+                } else if (tipo == 'Anexo') {
+                    cargarAnexos();
+                    listaInstruc();
+                } else if (tipo == 'Reporte') {
+                    cargarReporte();
+                    cargarPregEval();
+                } else if (tipo == 'Est') {
+                    cargarLosEstados();
+                    cargarCP();
+                    $('#drpEstado').change(function() {
+                        var x = $('#drpEstado option[value="' + $(this).val() + '"]').text();
+
+                        if (x.indexOf('endiente') !== -1) {
+                            $('#pendiente').show();
+                        } else {
+                            $('#pendiente').hide();
+                        }
+                    });
+                }
+            }
+        }
+
+        /****************************** Comentarios  *********************************/
+        function cargarComentario() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTC').html(ot);
+                        $('#fecGeneracionC').html(item.FecGenOT);
+                        $('#eqC').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#txtcomOT').val(item.ComOT);
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function guardarCom(opcion) {
+            checkConnection();
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario,
+                "NumOTREAL": $('#numOTC').html(),
+                "EQOT": $('#eq').val(),
+                "TipoActualizacion": opcion,
+                "ComOT": $('#txtcomOT').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/ot',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    navigator.notification.alert(
+                        response,
+                        alertDismissed,
+                        'AMovil',
+                        'Ok'
+                    );
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        /****************************** Comentarios  *********************************/
+
+        /****************************** Descripcion  *********************************/
+
+        function cargarDesc() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTD').html(ot);
+                        $('#fecGeneracionD').html(item.FecGenOT);
+                        $('#eqD').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#Desc').val(item.DesOT);
+
+
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function guardarDesc(opcion) {
+            checkConnection();
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario,
+                "NumOTREAL": $('#numOTD').html(),
+                "EQOT": $('#eq').val(),
+                "TipoActualizacion": opcion,
+                "DesOT": $('#Desc').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/ot',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    window.isphone = false;
+                    if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                        window.isphone = true;
+                    }
+                    if (window.isphone) {
+                        navigator.notification.alert(
+                            response,
+                            alertDismissed,
+                            'AMovil',
+                            'Ok'
+                        );
+                    } else {
+                        alert(response);
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+
+
+        /****************************** Descripcion  *********************************/
+
+
+        /****************************** Fechas  *********************************/
+        function cargarFecha() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTF').html(ot);
+                        $('#fecGeneracionF').html(item.FecGenOT);
+                        $('#eqF').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $("#fecAtencion").html(item.FecAtencionOT);
+                        $("#fecInicioT").html(item.FecInicioTrabajosOT);
+                        $("#fecInicioE").html(item.FecInicioEnsayosOT);
+                        $("#fecFinT").html(item.FecFinTrabajosOT);
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function guardarFA() {
+            var confirmar1 = confirm("\u00bfDesea actualizar la Fecha de Atencion de la OT?");
+            if (confirmar1) {
+                GuardarFecha('FA');
+            }
+        }
+
+        function guardarFIT() {
+            var confirmar1 = confirm("\u00bfDesea actualizar la Fecha de Inicio de Trabajos de la OT?");
+            if (confirmar1) {
+                GuardarFecha('FIT');
+            }
+        }
+
+        function guardarFIE() {
+            var confirmar1 = confirm("\u00bfDesea actualizar la Fecha de Inicio de Ensayos de la OT?");
+            if (confirmar1) {
+                GuardarFecha('FIE');
+            }
+        }
+
+        function guardarFFT() {
+            var confirmar1 = confirm("\u00bfDesea actualizar la Fecha de Fin de Trabajos de la OT?");
+            if (confirmar1) {
+                GuardarFecha('FFT');
+            }
+        }
+
+        function GuardarFecha(opcion) {
+            checkConnection();
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "NumOTREAL": $('#numOTF').html(),
+                "EQOT": $('#eq').val(),
+                "Usuario": localStorage.usuario,
+                "tipoFecha": opcion
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/fechaot',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                        window.isphone = true;
+                    }
+                    if (window.isphone) {
+                        navigator.notification.alert(
+                            response,
+                            alertDismissed,
+                            'AMovil',
+                            'Ok'
+                        );
+                    } else {
+                        alert(response);
+                    }
+
+                    cargarFec($('#numOTF').html());
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(response);
+                }
+            });
+        }
+
+        function cargarFec(opcion) {
+            var ot = opcion;
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTF').html(ot);
+                        $('#fecGeneracionF').html(item.FecGenOT);
+                        $('#eqF').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $("#fecAtencion").html(item.FecAtencionOT);
+                        $("#fecInicioT").html(item.FecInicioTrabajosOT);
+                        $("#fecInicioE").html(item.FecInicioEnsayosOT);
+                        $("#fecFinT").html(item.FecFinTrabajosOT);
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        /****************************** Fechas  *********************************/
+
+
+        /****************************** Anexos  *********************************/
+
+        function verificarPermisoDes(instot) {
+            instots = instot;
+            var permissions = cordova.plugins.permissions;
+            permissions.hasPermission(permissions.WRITE_EXTERNAL_STORAGE, checkPermissionCallbackDes, null);
+        }
+
+        function checkPermissionCallbackDes(status) {
+            if (!status.hasPermission) {
+                navigator.notification.alert(
+                    'Por favor habilite los permisos de Almacenamiento para continuar',
+                    alertDismissed,
+                    'AMovil',
+                    'Ok'
+                );
+                var permissions = cordova.plugins.permissions;
+                permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, succesCallbackDes, errorCallbackDes);
+            } else {
+                downloadFile(instots);
+            }
+        }
+
+        function succesCallbackDes(status) {
+            if (!status.hasPermission) {
+                errorCallbackDes();
+            }
+        }
+
+        function errorCallbackDes() {
+            navigator.notification.alert(
+                'El permiso de almacenamiento externo no quedo activado',
+                alertDismissed,
+                'AMovil',
+                'Ok'
+            );
+        }
+
+        var pictureSource; // picture source
+        var destinationType; // sets the format of returned value
+
+        function onDeviceR() {
+            pictureSource = navigator.camera.PictureSourceType;
+            destinationType = navigator.camera.DestinationType;
+        }
+
+        function cargarAnexos() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTAn').html(ot);
+                        $('#fecGeneracionAn').html(item.FecGenOT);
+                        $('#eqAn').html(item.IDEEQ + ' - ' + item.DESEQ);
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+
+                }
+            });
+        }
+
+        function listaInstruc() {
+            $('#Instructivos a').remove();
+            $('#Instructivos p').remove();
+            $('#Instructivos br').remove();
+
+            var anioot = $_GET("anoot");
+            var numot = $_GET("numot");
+            var eqotit = $('#eq').val();
+            var compania = localStorage.compania;
+
+            var ajax_data = {
+                'Parametro': 'ot',
+                'anioOt': anioot,
+                'numOt': numot,
+                'eqOt': eqotit,
+                'compania': compania
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/instructivo',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+
+                    $.each(response, function(key, item) {
+                        $('#Instructivos').append('<a onclick="verificarPermisoDes(\'' + item.nomIt + '\');">' + item.nomIt + '</a><br/><p></p>');
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+
+        /************************ Descarga los archivos ***************/ /////////////////////////
+        function downloadFile(nomIt) {
+
+
+            $('#status').html("Searching");
+            var url = uri + "/upload";
+            var Folder_Name = "Download";
+            var File_Name = nomIt;
+            var File_NoExt = nomIt;
+            //step to request a file system 
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, fileSystemSuccess, fileSystemFail);
+
+            function fileSystemSuccess(fileSystem) {
+                var download_link = encodeURI(url);
+                ext = File_Name.substr(File_Name.lastIndexOf('.') + 1); //Get extension of URL
+                File_NoExt = File_NoExt.substr(0, File_NoExt.lastIndexOf('.'));
+                download_link = download_link + '?nomIt=' + File_NoExt;
+                download_link = download_link + '&opcion=ot';
+                download_link = download_link + '&compania=' + localStorage.compania;
+                download_link = download_link + '&ext=' + ext;
+                var rootdir = fileSystem.root;
+                var fp = rootdir.toURL(); // Returns Fulpath of local directory
+                fp = fp + Folder_Name + "//" + File_Name.replace("/", "-"); // fullpath and name of the file which we want to give
+                $('#status').html("");
+                filetransfer(download_link, fp);
+            }
+
+            function fileSystemFail(evt) {
+                //Unable to access file system
+                $('#status').html("");
+                alert(evt.target.error.code);
+            }
+
+        }
+
+        function filetransfer(download_link, fp) {
+            var fileTransfer = new FileTransfer();
+
+            fileTransfer.onprogress = function(progressEvent) {
+                if (progressEvent.lengthComputable) {
+                    var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
+                    $('#status').html(perc + "% loaded...");
+                    //loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
+                } else {
+                    if ($('#status').html() == "") {
+                        $('#status').html("loading");
+                    } else {
+                        $('#status').html($('#status').html() += ".");
+                    }
+                    // loadingStatus.increment();
+                }
+            };
+
+            // File download function with URL and local path
+            fileTransfer.download(encodeURI(download_link), fp,
+                function(entry) {
+                    $('#status').html("Opening");
+                    navigator.notification.alert(
+                        'Descarga Completa',
+                        alertDismissed,
+                        'AMovil',
+                        'Ok'
+                    );
+                    fileOpener.open(entry.toURL());
+                    $('#status').html("");
+                },
+                function(error) {
+                    $('#status').html("");
+                    //Download abort errors or download failed errors
+                    navigator.notification.alert(
+                        'No se encontro el archivo en el servidor',
+                        alertDismissed,
+                        'AMovil',
+                        'Ok'
+                    );
+                    //alert("download error target " + error.target);
+                    //alert("upload error code" + error.code);
+                }
+            );
+        }
+
+
+
+
+
+        /****************** Obtiene el archivo del device ********************************************/
+        function verificarPermiso() {
+            var permissions = cordova.plugins.permissions;
+            permissions.hasPermission(permissions.WRITE_EXTERNAL_STORAGE, checkPermissionCallback, null);
+        }
+
+        function checkPermissionCallback(status) {
+            if (!status.hasPermission) {
+                navigator.notification.alert(
+                    'Por favor habilite los permisos de Almacenamiento para continuar',
+                    alertDismissed,
+                    'AMovil',
+                    'Ok'
+                );
+                var permissions = cordova.plugins.permissions;
+                permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, succesCallback, errorCallback);
+            } else {
+                getPhoto(pictureSource.PHOTOLIBRARY);
+            }
+        }
+
+        function succesCallback(status) {
+            if (!status.hasPermission) {
+                errorCallback();
+            }
+        }
+
+        function errorCallback() {
+            navigator.notification.alert(
+                'El permiso de almacenamiento externo no quedo activado',
+                alertDismissed,
+                'AMovil',
+                'Ok'
+            );
+        }
+
+        function guardarArchivo() {
+            checkConnection();
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/evaluacion',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    if (response === "Si") {
+                        verificarPermiso();
+                    } else {
+                        alert(response);
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function getPhoto(source) {
+            try {
+                // Retrieve image file location from specified source
+                navigator.camera.getPicture(obtenerNombreReal, onFail, {
+                    quality: 50,
+                    destinationType: destinationType.FILE_URI,
+                    sourceType: source,
+                    mediaType: navigator.camera.MediaType.ALLMEDIA
+                });
+            } catch (err) {
+                alert(err + "1");
+            }
+        }
+
+        function obtenerNombreReal(imageURI) {
+            image = imageURI;
+            window.FilePath.resolveNativePath(imageURI, successCallback, errorCallback);
+        }
+
+        function successCallback(r) {
+            r = r.substr(r.lastIndexOf('/') + 1);
+            name = r;
+            onPhotoURISuccess(image, name);
+        }
+
+        function errorCallback(error) {
+            alert("Error: " + error);
+        }
+
+        // Called when a photo is successfully retrieved
+        //
+        function onPhotoURISuccess(imageURI, nameURI) {
+            //window.resolveLocalFileSystemURI(imageURI, onResolveSuccess, falla);
+            checkConnection();
+            try {
+                var options = new FileUploadOptions();
+                options.fileKey = "file";
+                options.fileName = encodeURI(nameURI);
+                options.httpMethod = "POST";
+                options.mimeType = "attachment";
+                options.chunkedMode = false;
+                options.headers = {
+                    Connection: "close"
+                }
+                var params = {};
+                params.value1 = 'ot';
+                params.value2 = $('#numOTAn').html();
+                params.value3 = $('#eq').val();
+                params.value4 = localStorage.compania;
+                options.params = params;
+                var ft = new FileTransfer();
+                ft.onprogress = function(progressEvent) {
+                    if (progressEvent.lengthComputable) {
+                        var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
+                        $('#status').html(perc + "% loaded...");
+                        //loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
+                    } else {
+                        if ($('#status').html() == "") {
+                            $('#status').html("loading");
+                        } else {
+                            $('#status').html($('#status').html() += ".");
+                        }
+                        // loadingStatus.increment();
+                    }
+                };
+                ft.upload(imageURI, encodeURI(uri + "/upload"), win, fail, options);
+            } catch (err) {
+                alert(err + "2");
+            }
+        }
+
+        function onFail(message) {
+            alert('Failed because: ' + message);
+        }
+        /****************** Obtiene el archivo del device ********************************************/
+
+        /****************** SUBIDA DE ARCHIVOS ********************************************/
+        var win = function(r) {
+            alert(r.response + "3");
+            //console.log("Code = " + r.responseCode);
+            //console.log("Response = " + r.response);
+            //console.log("Sent = " + r.bytesSent);
+            $('#status').html("");
+            listaInstruc();
+
+        }
+
+        var fail = function(error) {
+                alert("Error: " + error.source);
+                //console.log("upload error source " + error.source);
+                //console.log("upload error target " + error.target);
+            }
+            /****************** SUBIDA DE ARCHIVOS ********************************************/
+
+
+        /****************************** Anexos  *********************************/
+
+
+        /****************************** Tipificacion  *********************************/
+
+
+        function cargarTipificacion() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTT').html(ot);
+                        $('#fecGeneracionT').html(item.FecGenOT);
+                        $('#eqT').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#drpTipoMMto').val(item.TipoMantenimientoOT);
+                        if (item.mecanico == "True") {
+                            $('#chk1').click()
+                        }
+                        if (item.electrico == "True") {
+                            $('#chk2').click()
+                        }
+                        if (item.iee == "True") {
+                            $('#chk3').click()
+                        }
+                        if (item.otro == "True") {
+                            $('#chk4').click()
+                        }
+                        $('#AME').val(item.NomAM);
+                    });
+                    $('#drpTipoMMto').selectmenu('refresh');
+                    cargarAM();
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+
+        function cargarAM() {
+            $("#AMs li").remove();
+            checkConnection();
+            var ajax_data = {
+                'IdeCY': localStorage.compania
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/actividadmmto',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $("#AMs").listview();
+                    $.each(response, function(key, item) {
+                        $("#AMs").append(' <li>' + item.NomAM + '</li>');
+                    });
+                    $("#AMs").listview('refresh');
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+
+            $(document).on("click", ".autAM li", function() {
+                var selectedItem = $(this).html();
+                $(this).parent().parent().find('input').val(selectedItem);
+                $('.autAM').hide();
+            });
+
+            $(document).on("focus", "#AME", function() {
+                var values = $('#AME').val();
+                if (values == "") {
+                    $('.autAM').show();
+                }
+            });
+
+            $(document).on("keydown", "#AME", function() {
+                $('.autAM').hide();
+            });
+            $(".autAM").on("listviewbeforefilter", function(e, data) {
+                $('.autAM').show();
+            })
+            $('.autAM').hide();
+        }
+
+        function validarAM() {
+            var val = $('#AME').val();
+            var x = false;
+            if (val != "") {
+                $(".autAM li").each(function(index) {
+                    var selectedItem = $(this).html();
+                    if (val == selectedItem) {
+                        x = true;
+                    }
+                });
+            } else {
+                x = true;
+            }
+            if (x == false) {
+                alert('Debe escoger una actividad de mantenimiento v\u00e1lida de la lista');
+            }
+            return x;
+        }
+
+
+
+        function guardarTip(opcion) {
+            checkConnection();
+            if (validarAM()) {
+                var ajax_data = {
+                    "IdeCY": localStorage.compania,
+                    "Usuario": localStorage.usuario,
+                    "NumOTREAL": $('#numOTT').html(),
+                    "EQOT": $('#eq').val(),
+                    "TipoActualizacion": opcion,
+                    "TipoMantenimientoOT": $('#drpTipoMMto').val(),
+                    "mecanico": $('#chk1').prop('checked'),
+                    "electrico": $('#chk2').prop('checked'),
+                    "iee": $('#chk3').prop('checked'),
+                    "otro": $('#chk4').prop('checked'),
+                    "NomAM": $('#AME').val()
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: uri + '/ot',
+                    crossDomain: true,
+                    contentType: "application/json",
+                    beforeSend: function() {
+                        $.mobile.loading('show')
+                    },
+                    complete: function() {
+                        $.mobile.loading('hide')
+                    },
+                    data: JSON.stringify(ajax_data),
+                    success: function(response) {
+                        alert(response);
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                    }
+                });
+            }
+        }
+        /****************************** Tipificacion  *********************************/
+
+
+        /****************************** Evaluacion    *********************************/
+
+
+        function cargarEvaluacion() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTE').html(ot);
+                        $('#fecGeneracionE').html(item.FecGenOT);
+                        $('#eqE').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        if (item.resEval1OT != "" && item.resEval1OT != 0) {
+                            $('#rbr1').val(item.resEval1OT);
+                        }
+                        if (item.resEval2OT != "" && item.resEval2OT != 0) {
+                            $('#rbr2').val(item.resEval2OT);
+                            //$('input:radio[name="rbr2"]').filter('[value="'+ item.resEval2OT +'"]').parent().find("label[for].ui-btn").click()
+                        }
+                        if (item.resEval3OT != "" && item.resEval3OT != 0) {
+                            $('#rbr3').val(item.resEval3OT);
+                            //$('input:radio[name="rbr3"]').filter('[value="'+ item.resEval3OT +'"]').parent().find("label[for].ui-btn").click()
+                        }
+                        if (item.resEval4OT != "" && item.resEval4OT != 0) {
+                            $('#rbr4').val(item.resEval4OT);
+                            //$('input:radio[name="rbr4"]').filter('[value="'+ item.resEval4OT +'"]').parent().find("label[for].ui-btn").click()
+                        }
+                        if (item.RESEVAL5OT != "" && item.RESEVAL5OT != 0) {
+                            $('#rbr5').val(item.RESEVAL5OT);
+                            //$('input:radio[name="rbr5"]').filter('[value="'+ item.resEval5OT +'"]').parent().find("label[for].ui-btn").click()
+                        }
+                    });
+                    $('#rbr1').selectmenu("refresh", true);
+                    $('#rbr2').selectmenu("refresh", true);
+                    $('#rbr3').selectmenu("refresh", true);
+                    $('#rbr4').selectmenu("refresh", true);
+                    $('#rbr5').selectmenu("refresh", true);
+                    verificarFirma(false);
+                    verificarFirmaT(false);
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function cargarPregEval() {
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/evaluacion',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        if (item.Pregunta1 != "") {
+                            $(".p1").find('strong').text(item.Pregunta1);
+                        } else {
+                            $("#rblP1").hide();
+                        }
+                        if (item.Pregunta2 != "") {
+                            $(".p2").find('strong').text(item.Pregunta2);
+                        } else {
+                            $("#rblP2").hide();
+                        }
+                        if (item.Pregunta3 != "") {
+                            $(".p3").find('strong').text(item.Pregunta3);
+                        } else {
+                            $("#rblP3").hide();
+                        }
+                        if (item.Pregunta4 != "") {
+                            $(".p4").find('strong').text(item.Pregunta4);
+                        } else {
+                            $("#rblP4").hide();
+                        }
+                        if (item.Pregunta5 != "") {
+                            $(".p5").find('strong').text(item.Pregunta5);
+                        } else {
+                            $("#rblP5").hide();
+                        }
+
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+
+        }
+
+        function guardarEvaluacion() {
+            checkConnection();
+
+            if ($('#rbr1').val() == "") {
+                alert("Debe responder la pregunta 1");
+                return false;
+            }
+            if ($('#rbr2').val() == "") {
+                alert("Debe responder la pregunta 2");
+                return false;
+            }
+            if ($('#rbr3').val() == "") {
+                alert("Debe responder la pregunta 3");
+                return false;
+            }
+            if ($('#rbr4').val() == "") {
+                alert("Debe responder la pregunta 4");
+                return false;
+            }
+            if ($('#rbr5').val() == "") {
+                alert("Debe responder la pregunta 5");
+                return false;
+            }
+
+            var SS = $('#numOTE').html();
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario,
+                "OS": SS,
+                "resEval1": $('#rbr1').val(),
+                "resEval2": $('#rbr2').val(),
+                "resEval3": $('#rbr3').val(),
+                "resEval4": $('#rbr4').val(),
+                "resEval5": $('#rbr5').val(),
+                "comentario": $('#ComEvalTxt').val(),
+                "modo": '2',
+                "EQOT": $('#eq').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/evaluacion',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    alert(response);
+                    document.location.href = 'consultaOT.html';
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+        /****************************** Evaluacion    *********************************/
+
+
+        /****************************** Cierre    *********************************/
+
+
+        function cargarCierre() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $('#numOTCi').html(ot);
+                        $('#TipoOTCi').html(item.TipoMantenimientoOT);
+                        $('#fecGeneracionCi').html(item.FecGenOT);
+                        $('#eqCi').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#CFC').val(item.CausaFalla);
+                    });
+                    cargarCF();
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("ERROR:" + xhr.status);
+                }
+            });
+        }
+
+        function cargarCF() {
+            $("#AMCF li").remove();
+            checkConnection();
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'causaFalla': 1
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/actividadmmto',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $("#AMCF").listview();
+                    $.each(response, function(key, item) {
+                        $("#AMCF").append(' <li>' + item.NomAM + '</li>');
+                    });
+                    $("#AMCF").listview('refresh');
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+
+            $(document).on("click", ".autAMCF li", function() {
+                var selectedItem = $(this).html();
+                $(this).parent().parent().find('input').val(selectedItem);
+                $('.autAMCF').hide();
+            });
+
+            $(document).on("focus", "#CFC", function() {
+                var values = $('#CFC').val();
+                if (values == "") {
+                    $('.autAMCF').show();
+                }
+            });
+
+            $(document).on("keydown", "#CFC", function() {
+                $('.autAMCF').hide();
+            });
+            $(".autAMCF").on("listviewbeforefilter", function(e, data) {
+                $('.autAMCF').show();
+            })
+            $('.autAMCF').hide();
+        }
+
+        function validarCF() {
+            var val = $('#CFC').val();
+            var x = false;
+            var tipoOTCi = $('#TipoOTCi').text();
+            if (val !== "") {
+                $(".autAMCF li").each(function(index) {
+                    var selectedItem = $(this).html();
+                    if (val == selectedItem) {
+                        x = true;
+                    }
+                });
+            } else {
+                if (tipoOTCi === "1") {
+                    x = false;
+                } else {
+                    x = true
+                }
+            }
+            if (x == false) {
+                alert('Debe escoger una causa de falla v\u00e1lida de la lista');
+            }
+            return x;
+        }
+
+        function cerrar() {
+            var aceptar = confirm("\u00bfDesea cerrar la OT " + $_GET("anoot") + "-" + $_GET("numot") + "?");
+            if (aceptar) {
+                checkConnection();
+                var comentario = $('#txtcomOTC').val();
+                var y = validarCF();
+
+                if (comentario != "" && y) {
+                    var CF;
+                    if ($('#CFC').val() === "") {
+                        CF = 'null';
+                    } else {
+                        CF = $('#CFC').val();
+                    }
+                    var ajax_data = {
+                        "IdeCY": localStorage.compania,
+                        "Usuario": localStorage.usuario,
+                        "AnoOT": $_GET("anoot"),
+                        "NumOT": $_GET("numot"),
+                        "EQOT": $('#eq').val(),
+                        "ComOT": comentario,
+                        "CausaFalla": CF
+                    };
+                    $.ajax({
+                        type: 'PUT',
+                        url: uri + '/ot',
+                        crossDomain: true,
+                        beforeSend: function() {
+                            $.mobile.loading('show')
+                        },
+                        complete: function() {
+                            $.mobile.loading('hide')
+                        },
+                        data: ajax_data,
+                        success: function(response) {
+                            if (response == 'ok') {
+                                alert('Cierre parcial de la Orden Satisfactorio.');
+                                document.location.href = 'consultaOT.html';
+                            } else {
+                                alert(response);
+                            }
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            alert('Error! ' + ajaxOptions + ' Status = ' + xhr.status);
+                        }
+                    });
+                } else {
+                    if (comentario == "") {
+                        alert("El campo comentarios no puede ir en blanco");
+                    }
+                }
+            }
+        }
+        /****************************** Cierre    *********************************/
+
+        /****************************** Estado    *********************************/
+
+
+        function cargarEstados() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    var x = 0;
+                    $.each(response, function(key, item) {
+                        $('#numOTEs').html(ot);
+                        $('#fecGeneracionEs').html(item.FecGenOT);
+                        $('#eqEs').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#drpEstado').val(item.EstadoOT);
+                        x = $('#drpEstado option[value="' + item.EstadoOT + '"]').text();
+                        $('#CPC').val(item.CausaP);
+                    });
+
+                    $('#drpEstado').selectmenu('refresh');
+
+                    if (x.indexOf('endiente') !== -1) {
+                        $('#pendiente').show();
+                    } else {
+                        $('#pendiente').hide();
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("ERROR:" + xhr.status);
+                }
+            });
+        }
+
+        function cargarLosEstados() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $.each(response, function(key, item) {
+                        $("#drpEstado").append(' <option value="' + item.NumOTREAL + '">' + item.EQOT + '</option>');
+                    });
+                    cargarEstados();
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("ERROR:" + xhr.status);
+                }
+            });
+        }
+
+        function cargarCP() {
+            $("#AMCP li").remove();
+            checkConnection();
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'causaFalla': 2
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/actividadmmto',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    $("#AMCP").listview();
+                    $.each(response, function(key, item) {
+                        $("#AMCP").append(' <li>' + item.NomAM + '</li>');
+                    });
+                    $("#AMCP").listview('refresh');
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+
+            $(document).on("click", ".autAMCP li", function() {
+                var selectedItem = $(this).html();
+                $(this).parent().parent().find('input').val(selectedItem);
+                $('.autAMCP').hide();
+            });
+
+            $(document).on("focus", "#CPC", function() {
+                var values = $('#CPC').val();
+                if (values == "") {
+                    $('.autAMCP').show();
+                }
+            });
+
+            $(document).on("keydown", "#CPC", function() {
+                $('.autAMCP').hide();
+            });
+            $(".autAMCP").on("listviewbeforefilter", function(e, data) {
+                $('.autAMCP').show();
+            })
+            $('.autAMCP').hide();
+        }
+
+        function validarCP() {
+            var val = $('#CPC').val();
+            var x = false;
+            if (val !== "") {
+                $(".autAMCP li").each(function(index) {
+                    var selectedItem = $(this).html();
+                    if (val == selectedItem) {
+                        x = true;
+                    }
+                });
+            } else {
+                x = false;
+            }
+            if (x == false) {
+                alert('Debe escoger una causa de pendiente v\u00e1lida de la lista');
+            }
+            return x;
+        }
+
+        function ActualizarEstado() {
+            checkConnection();
+            var y = true;
+            x = $('#drpEstado option[value="' + $('#drpEstado').val() + '"]').text();
+            if (x.indexOf('endiente') !== -1) {
+                y = validarCP();
+            }
+            if (y) {
+                var CP;
+                if ($('#CPC').val() === "") {
+                    CP = 'null';
+                } else {
+                    CP = $('#CPC').val();
+                }
+                var ajax_data = {
+                    "IdeCY": localStorage.compania,
+                    "Usuario": localStorage.usuario,
+                    "NumOTREAL": $('#numOTEs').html(),
+                    "EQOT": $('#eq').val(),
+                    "TipoActualizacion": 9,
+                    "DesOT": $('#drpEstado').val(),
+                    "CausaFalla": CP
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: uri + '/ot',
+                    crossDomain: true,
+                    contentType: "application/json",
+                    beforeSend: function() {
+                        $.mobile.loading('show')
+                    },
+                    complete: function() {
+                        $.mobile.loading('hide')
+                    },
+                    data: JSON.stringify(ajax_data),
+                    success: function(response) {
+                        window.isphone = false;
+                        if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                            window.isphone = true;
+                        }
+                        if (window.isphone) {
+                            navigator.notification.alert(
+                                response,
+                                alertDismissed,
+                                'AMovil',
+                                'Ok'
+                            );
+                        } else {
+                            alert(response);
+                        }
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                    }
+                });
+            }
+        }
+        /****************************** Estado    *********************************/
+        function firmar(imageURI) {
+            checkConnection();
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            if (limpiado) {
+                var solicitante = "";
+                if (eval == "") {
+                    solicitante = prompt("Inserte el nombre del solicitante");
+                } else {
+                    solicitante = eval;
+                }
+                if (solicitante !== "" && solicitante !== null) {
+                    var ajax_data = {
+                        "IdeCY": localStorage.compania,
+                        "Usuario": localStorage.usuario,
+                        "NumOTREAL": ot,
+                        "tipoActualizacion": "8",
+                        "EQOT": $('#eq').val(),
+                        "firma": imageURI[1],
+                        "SolicitanteOT": solicitante,
+                        "tipoFirma": tipoEval
+                    };
+                    $.ajax({
+                        type: 'POST',
+                        url: uri + '/ot',
+                        crossDomain: true,
+                        contentType: "application/json",
+                        beforeSend: function() {
+                            $.mobile.loading('show')
+                        },
+                        complete: function() {
+                            $.mobile.loading('hide')
+                        },
+                        data: JSON.stringify(ajax_data),
+                        success: function(response) {
+                            alert(response);
+                            document.location.hash = '#EvaluacionOT';
+                            verificarFirma(false);
+                            verificarFirmaT(false);
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                        }
+                    });
+                } else {
+                    if (solicitante === "" || solicitante === null) {
+                        alert("Se debe insertar el solicitante");
+                    }
+                }
+            } else {
+                if (!limpiado) {
+                    alert("Se debe insertar la firma");
+                }
+            }
+        }
+
+        function ponerFirma() {
+            x = setTimeout(function() {
+                limpiarFirma();
+                limpiarFirma();
+            }, 500);
+        }
+
+        function limpiarFirma() {
+            $('#signature').empty();
+            $("#signature").jSignature({
+                'width': '120%',
+                height: 215,
+                'background-color': '#fff'
+            });
+            limpiado = false;
+            var lim = false;
+
+            $("#signature").change(function() {
+                if (lim) {
+                    limpiado = true;
+                }
+                lim = true;
+            });
+        }
+
+        function verificarFirma(showRpt) {
+            checkConnection();
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario,
+                "NumOTREAL": ot,
+                "TipoActualizacion": "4",
+                "tipoFirma": 1
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/ot',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    if (showRpt) {
+                        if (response.indexOf("false,") !== 0) {
+                            var resp = response.substring(1, 20);
+                            if (resp !== 'a ocurrido un error') {
+                                var data = JSON.parse(response);
+                                $('#RPEimageFirm #RPEfirmaimg').attr('src', data.firma);
+                                $('#RPErespFirm').text(data.respon);
+                                $('#RPEdateFirm').text(data.fecha);
+                            } else {
+                                $('#RPEimageFirm').hide();
+                            }
+                        }
+                    } else {
+                        if (response.indexOf("false,") !== 0) {
+                            var resp = response.substring(1, 20);
+                            if (resp !== 'a ocurrido un error') {
+                                var data = JSON.parse(response);
+                                $('#imageFirm').show();
+                                $('#firbtn').hide();
+                                $('#imageFirm #firmaimg').attr('src', data.firma);
+                                $('#respFirm').text(data.respon);
+                                $('#dateFirm').text(data.fecha);
+                            } else {
+                                $('#imageFirm').hide();
+                                $('#firbtn').show();
+                                if (parseInt(response.split(",")[1]) > 0) {
+                                    $('#opcionManual').hide();
+                                    $('#opcionEval').show();
+                                    $('#footerEval').show();
+                                    $('#ceduEval').val("");
+                                    $('#passeval').val("");
+                                } else {
+                                    $('#opcionManual').show();
+                                    $('#opcionEval').hide();
+                                    $('#footerEval').hide();
+                                }
+                            }
+                        } else {
+                            if (parseInt(response.split(",")[1]) > 0) {
+                                $('#opcionManual').hide();
+                                $('#opcionEval').show();
+                                $('#footerEval').show();
+                                $('#ceduEval').val("");
+                                $('#passeval').val("");
+                            } else {
+                                $('#opcionManual').show();
+                                $('#opcionEval').hide();
+                                $('#footerEval').hide();
+                            }
+                            $('#imageFirm').hide();
+                            $('#firbtn').show();
+                        }
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function verificarFirmaT(showRpt) {
+            checkConnection();
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            var ajax_data = {
+                "IdeCY": localStorage.compania,
+                "Usuario": localStorage.usuario,
+                "NumOTREAL": ot,
+                "TipoActualizacion": "4",
+                "tipoFirma": 2
+            };
+            $.ajax({
+                type: 'POST',
+                url: uri + '/ot',
+                crossDomain: true,
+                contentType: "application/json",
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: JSON.stringify(ajax_data),
+                success: function(response) {
+                    if (showRpt) {
+                        if (response.indexOf("false,") !== 0) {
+                            var resp = response.substring(1, 20);
+                            if (resp !== 'a ocurrido un error') {
+                                var data = JSON.parse(response);
+                                $('#RPEimageFirmT #RPEfirmaimgT').attr('src', data.firma);
+                                $('#RPErespFirmT').text(data.respon);
+                                $('#RPEdateFirmT').text(data.fecha);
+                            } else {
+                                $('#RPEimageFirmT').hide();
+                            }
+                        }
+                    } else {
+                        if (response.indexOf("false,") !== 0) {
+                            var resp = response.substring(1, 20);
+                            if (resp !== 'a ocurrido un error') {
+                                var data = JSON.parse(response);
+                                $('#imageFirmT').show();
+                                $('#firbtnT').hide();
+                                $('#imageFirmT #firmaimgT').attr('src', data.firma);
+                                $('#respFirmT').text(data.respon);
+                                $('#dateFirmT').text(data.fecha);
+                            } else {
+                                $('#imageFirmT').hide();
+                                $('#firbtnT').show();
+                                if (parseInt(response.split(",")[1]) > 0) {
+                                    $('#opcionManual').show();
+                                    $('#opcionEval').show();
+                                    $('#footerEval').show();
+                                    $('#ceduEval').val("");
+                                    $('#passeval').val("");
+                                } else {
+                                    $('#opcionManual').show();
+                                    $('#opcionEval').hide();
+                                    $('#footerEval').hide();
+                                }
+                            }
+                        } else {
+                            if (parseInt(response.split(",")[1]) > 0) {
+                                $('#opcionManual').show();
+                                $('#opcionEval').show();
+                                $('#footerEval').show();
+                                $('#ceduEval').val("");
+                                $('#passeval').val("");
+                            } else {
+                                $('#opcionManual').show();
+                                $('#opcionEval').hide();
+                                $('#footerEval').hide();
+                            }
+                            $('#imageFirmT').hide();
+                            $('#firbtnT').show();
+                        }
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+        function verificarEvaluador() {
+            var ajax_data = {
+                "Cedu": $('#ceduEval').val(),
+                "PassEval": $('#passeval').val(),
+                "IdeCY": localStorage.compania,
+                "usuario": localStorage.usuario
+            };
+            var status = "";
+            if ($('#ceduEval').val() === "") {
+                status = "Ingrese la cédula";
+            } else {
+                if ($('#passeval').val() === "") {
+                    status = "Ingrese la contraseña";
+                }
+            }
+
+            if (status === "") {
+                $.ajax({
+                    type: 'GET',
+                    url: uri + '/evaluacion',
+                    crossDomain: true,
+                    contentType: "application/json",
+                    beforeSend: function() {
+                        $.mobile.loading('show')
+                    },
+                    complete: function() {
+                        $.mobile.loading('hide')
+                    },
+                    data: ajax_data,
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.split(",")[0] === '1') {
+                            eval = response.split(",")[1];
+                            document.location.hash = '#FirmaOTDedo';
+                            ponerFirma();
+                        } else {
+                            alert(response.split(",")[1]);
+                        }
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                    }
+                });
+            } else {
+                alert(status);
+            }
+        }
+
+
+        function verificarPermisoPDF() {
+            var permissions = cordova.plugins.permissions;
+            permissions.hasPermission(permissions.WRITE_EXTERNAL_STORAGE, checkPermissionCallbackPDF, null);
+        }
+
+        function checkPermissionCallbackPDF(status) {
+            if (!status.hasPermission) {
+                navigator.notification.alert(
+                    'Por favor habilite los permisos de Almacenamiento para continuar',
+                    alertDismissed,
+                    'AMovil',
+                    'Ok'
+                );
+                var permissions = cordova.plugins.permissions;
+                permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, succesCallbackPDF, errorCallbackPDF);
+            } else {
+                HTMLtoPDF();
+            }
+        }
+
+        function succesCallbackPDF(status) {
+            if (!status.hasPermission) {
+                errorCallbackPDF();
+            }
+        }
+
+        function errorCallbackPDF() {
+            navigator.notification.alert(
+                'El permiso de almacenamiento externo no quedo activado',
+                alertDismissed,
+                'AMovil',
+                'Ok'
+            );
+        }
+
+        function HTMLtoPDF() {
+            var pdf = new jsPDF('p', 'pt', 'letter');
+            source = $('#HTMLtoPDF')[0];
+            specialElementHandlers = {
+                '#bypassme': function(element, renderer) {
+                    return true
+                }
+            }
+            margins = {
+                top: 50,
+                left: 60,
+                width: 545
+            };
+            pdf.fromHTML(
+                source // HTML string or DOM elem ref.
+                , margins.left // x coord
+                , margins.top // y coord
+                , {
+                    'width': margins.width // max width of content on PDF
+                        ,
+                    'elementHandlers': specialElementHandlers
+                },
+                function(dispose) {
+                    // dispose: object with X, Y of the last line add to the PDF
+                    //          this allow the insertion of new lines after html
+                    var pdfOutput = pdf.output();
+                    console.log(pdfOutput);
+
+                    //pc
+                    if (!window.isphone) {
+                        pdf.save('html2pdf.pdf');
+                    } else {
+                        //movil
+                        // segun la documentacion de fonga eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
+                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+
+
+                                fileSystem.root.getFile('html2pdf.pdf', {
+                                    create: true
+                                }, function(entry) {
+                                    var fileEntry = entry;
+                                    alert(entry);
+
+                                    entry.createWriter(function(writer) {
+                                        writer.onwrite = function(evt) {
+                                            alert("write success");
+                                            fileOpener.open(fileEntry.toURL());
+                                        };
+                                        alert("writing to file");
+                                        writer.write(pdfOutput);
+                                    }, function(error) {
+                                        alert(error);
+                                    });
+
+                                }, function(error) {
+                                    alert(error);
+                                });
+                            },
+                            function(event) {
+                                alert(evt.target.error.code);
+                            });
+                    }
+                }
+            )
+        }
+
+        /****************************** Generar Reporte    *********************************/
+
+
+        function cargarReporte() {
+            var ot = $_GET("anoot") + '-' + $_GET("numot");
+            $('#titulo').html('OT ' + ot);
+            var usr = localStorage.usuario;
+
+            var ajax_data = {
+                'IdeCY': localStorage.compania,
+                'usuario': usr,
+                'ot': ot,
+                'filtro': ''
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/ot',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+
+                    $.each(response, function(key, item) {
+
+                        $('#RPTnumOTE').html(ot);
+                        $('#RPTfecGeneracionE').html(item.FecGenOT);
+                        $('#RPTeqE').html(item.IDEEQ + ' - ' + item.DESEQ);
+                        $('#RPE1').html(getTextoEvaluacion(item.resEval1OT));
+                        $('#RPE2').html(getTextoEvaluacion(item.resEval2OT));
+                        $('#RPE3').html(getTextoEvaluacion(item.resEval3OT));
+                        $('#RPE4').html(getTextoEvaluacion(item.resEval4OT));
+                        $('#RPE5').html(getTextoEvaluacion(item.RESEVAL5OT));
+
+                        verificarFirma(true);
+                        verificarFirmaT(true);
+
+                        $('#RPTM1 strong').text($('#radio-choice-h-1A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM2 strong').text($('#radio-choice-h-2A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM3 strong').text($('#radio-choice-h-3A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM4 strong').text($('#radio-choice-h-4A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM5 strong').text($('#radio-choice-h-5A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM6 strong').text($('#radio-choice-h-6A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM7 strong').text($('#radio-choice-h-7A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM8 strong').text($('#radio-choice-h-8A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM9 strong').text($('#radio-choice-h-9A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM10 strong').text($('#radio-choice-h-10A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM11 strong').text($('#radio-choice-h-11A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM12 strong').text($('#radio-choice-h-12A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM13 strong').text($('#radio-choice-h-13A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM14 strong').text($('#radio-choice-h-14A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM15 strong').text($('#radio-choice-h-15A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM16 strong').text($('#radio-choice-h-16A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM17 strong').text($('#radio-choice-h-17A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM18 strong').text($('#radio-choice-h-18A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM19 strong').text($('#radio-choice-h-19A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM20 strong').text($('#radio-choice-h-20A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM21 strong').text($('#radio-choice-h-21A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM22 strong').text($('#radio-choice-h-22A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM23 strong').text($('#radio-choice-h-23A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM24 strong').text($('#radio-choice-h-24A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM25 strong').text($('#radio-choice-h-25A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM26 strong').text($('#radio-choice-h-26A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM27 strong').text($('#radio-choice-h-27A').prop('checked') ? 'Si' : 'No');
+                        $('#RPTM28 strong').text($('#radio-choice-h-28A').prop('checked') ? 'Si' : 'No');
+
+
+                    });
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("errorstatus: " + xhr.status + " ajaxoptions: " + ajaxOptions + " throwError: " + thrownError);
+                }
+            });
+        }
+
+
+
+        function getTextoEvaluacion(Rpta) {
+
+            var evaluacion = '';
+
+            switch (Rpta) {
+                case '1':
+                    evaluacion = 'Excelente';
+                    break;
+                case '2':
+                    evaluacion = 'Bueno';
+                    break;
+                case '3':
+                    evaluacion = 'Aceptable';
+                    break;
+                case '4':
+                    evaluacion = 'Regular';
+                    break;
+                case '5':
+                    evaluacion = 'Malo';
+                    break;
+            }
+
+            return evaluacion;
+        }
+    </script>
+</head>
+
+<body>
+    <div data-role="page" data-mini="true" id="DetalleOT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a onclick="document.location.href = 'consultaOT.html'" class="back-btn" data-role='button' data-icon="back" data-iconpos='notext'></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumbNo">Consulta OT</span></h1>
+        </div>
+        <div data-role="content">
+            <div id='descripcion'><br>
+                <label><strong>N&uacute;mero de OT: </strong></label>
+                <p id="titulo" class="ots"></p>
+                <label><strong>Descripci&oacute;n</strong></label>
+                <p id="desc"></p>
+                <!--<label><strong>F/H Creaci&oacute;n</strong></label><p id="fecReg"></p>-->
+                <label><strong>F/H Programada</strong></label>
+                <p id="fecGen"></p>
+                <!--<label><strong>Centro de Costo</strong></label><p id="CCosto"></p>-->
+                <!--<label><strong>UF</strong></label><p id="UF"></p>-->
+                <label><strong>Equipo</strong></label>
+                <p id="pIdeEQ"></p>
+                <input type="hidden" id="eq" value="" />
+            </div>
+
+            <div id="operaciones" data-role="fieldcontain">
+                <a href="#ActualizaDesc" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Actualizar Descripción</a>
+                <a href="#ActualizaEst" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Actualizar Estado</a>
+                <a href="#ActualizaTipificacion" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Actualizar Tipificación</a>
+                <a href="#ActualizaComentario" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Actualizar Comentario</a>
+                <a href="#ActualizaFechas" data-role="button" data-mini="true" data-ajax="false" data-icon="clock">Actualizar Fechas</a>
+                <a href="#cargaArchivo" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Documentos Anexos</a>
+                <a href="#CerrarOT" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Cierre Parcial OT</a>
+                <a href="#EvaluacionOT" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Evaluación OT</a>
+                <a href="#Reporte" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Generar Reporte</a>
+            </div>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------ DESCRIPCION ---------------------------------------- -->
+    <div data-role="page" id="ActualizaDesc" data-title="Descripcion OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Descripción</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTD"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionD"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqD"></p>
+            <label><strong>Descripción:</strong></label><textarea id="Desc" class="textBig"></textarea>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarDesc" data-role="button" data-inline='true' onclick="guardarDesc(3);" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------ Estado ---------------------------------------- -->
+    <div data-role="page" id="ActualizaEst" data-title="Estado OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Estado</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTEs"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionEs"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqEs"></p>
+            <label for="drpEstado" class="select"><strong>Estado</strong></label>
+            <select name="drpEstado" id="drpEstado">
+                        </select>
+            <div id="pendiente">
+                <label><strong>Causa de Pendiente</strong></label>
+                <input type="text" data-type="search" id="CPC" placeholder="Causa de Pendiente" data-clear-btn="true" />
+                <ul id="AMCP" data-role="listview" data-filter="true" data-filter-reveal="false" class="autAMCP" data-input="#CPC">
+                </ul>
+            </div><br>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarEst" data-role="button" data-inline='true' onclick="ActualizarEstado();" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!------------------------------------------ COMENTARIOS ---------------------------------------- -->
+
+    <div data-role="page" id="ActualizaComentario" data-title="Comentario OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Comentario</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTC"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionC"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqC"></p>
+            <label><strong>Comentarios:</strong></label><textarea id="txtcomOT" class="textBig"></textarea>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarCom" data-role="button" data-inline='true' onclick="guardarCom(1);" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------ FECHAS ---------------------------------------- -->
+    <div data-role="page" id="ActualizaFechas" data-title="Fechas OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Fechas</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTF"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionF"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqF"></p>
+            <div data-role="collapsible" data-inset="false" data-icon="false">
+                <h4>Fecha de Atenci&oacute;n</h4>
+                <div data-role="fieldcontain">
+                    <label><strong>Fecha de Atenci&oacute;n:</strong></label>
+                    <p id="fecAtencion"></p>
+                    <a href="#" data-role="button" data-mini="true" onclick="guardarFA()" data-icon="clock">actualizar</a>
+                    <br/>
+                </div>
+            </div>
+            <div data-role="collapsible" data-inset="false" data-icon="false">
+                <h4>Fecha Inicio Trabajos</h4>
+                <div data-role="fieldcontain">
+                    <label><strong>Fecha Inicio Trabajos:</strong></label>
+                    <p id="fecInicioT" name="fecInicioT"></p>
+                    <a href="#" data-role="button" data-mini="true" onclick="guardarFIT()" data-icon="clock">actualizar</a>
+                </div>
+            </div>
+            <div data-role="collapsible" data-inset="false" data-icon="false">
+                <h4>Fecha Inicio Ensayos</h4>
+                <div data-role="fieldcontain">
+                    <label><strong>Fecha Inicio Ensayos:</strong></label>
+                    <p id="fecInicioE" name="fecInicioE"></p>
+                    <a href="#" data-role="button" data-mini="true" onclick="guardarFIE()" data-icon="clock">actualizar</a>
+                </div>
+            </div>
+            <div data-role="collapsible" data-inset="false" data-icon="false">
+                <h4>Fecha Fin Trabajos</h4>
+                <div data-role="fieldcontain">
+                    <label><strong>Fecha Fin Trabajos:</strong></label>
+                    <p id="fecFinT" name="fecFinT"></p>
+                    <a href="#" data-role="button" data-mini="true" onclick="guardarFFT()" data-icon="clock">actualizar</a>
+                </div>
+            </div>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+        </div>
+    </div>
+    <!----------------------------------------- ANEXOS ------------------------------------------>
+    <div data-role="page" id="cargaArchivo" data-title="Anexos OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Anexos</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTAn"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionAn"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqAn"></p>
+
+            <button onclick="guardarArchivo();">Subir Anexo</button><br>
+
+            <div id="Instructivos" data-role="fieldcontain">
+            </div>
+            <label id="status"></label>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+        </div>
+    </div>
+
+    <!------------------------------------------ TIPIFICACION ---------------------------------------- -->
+
+
+    <div data-role="page" id="ActualizaTipificacion" data-title="Tipificacion OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Tipificación</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTT"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionT"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqT"></p>
+
+            <label><strong>Tipo Trabajo</strong></label>
+            <fieldset data-role="controlgroup" data-type="horizontal">
+                <input type="checkbox" id="chk1">
+                <label for="chk1">Mec</label>
+                <input type="checkbox" id="chk2">
+                <label for="chk2">Elc</label>
+                <input type="checkbox" id="chk3">
+                <label for="chk3">I/E</label>
+                <input type="checkbox" id="chk4">
+                <label for="chk4">Otr</label>
+            </fieldset>
+
+            <label for="drpTipoMMto" class="select"><strong>Tipo Mantenimiento</strong></label>
+            <select name="drpTipoMMto" id="drpTipoMMto">
+                            <option value="1">Correctivo</option>
+                            <option value="2">Preventivo</option>
+                            <option value="3">Predictivo</option>
+                            <option value="4">Calibracion</option>
+                            <option value="5">Lubricacion</option>
+                            <option value="6">Otro</option>
+                            <option value="7">Preventivo Manual</option>
+                        </select>
+
+            <label><strong>Tipo Actividad</strong></label>
+            <input type="text" data-type="search" id="AME" placeholder="Actividad Mmto" data-clear-btn="true" />
+            <ul id="AMs" data-role="listview" data-filter="true" data-filter-reveal="false" class="autAM" data-input="#AME">
+            </ul>
+
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarTip" data-role="button" data-inline='true' onclick="guardarTip(2);" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!------------------------------------------ EVALUACION ---------------------------------------- -->
+
+    <div data-role="page" id="EvaluacionOT" data-title="Evaluacion OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a onclick="document.location.hash = '';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Evaluación</span></h1>
+        </div>
+        <div id="contentpdf" data-role="content"> <br>
+            <label><strong>N&uacute;mero de OT: </strong></label>
+            <p id="numOTE"></p>
+            <label><strong>FF/HH Creaci&oacute;n </strong></label>
+            <p id="fecGeneracionE"></p>
+            <label><strong>Equipo </strong></label>
+            <p id="eqE"></p>
+            <div id="datosEvaluacion" data-role="fieldcontain">
+                <div id="rblP1">
+                    <label class="p1"><strong></strong></label>
+                    <select name="rbr1" id="rbr1">
+                                <option value="">Seleccione</option>
+                                <option value="1">Excelente</option>
+                                <option value="2">Bueno</option>
+                                <option value="3">Aceptable</option>
+                                <option value="4">Regular</option>
+                                <option value="5">Malo</option>
+                            </select>
+                </div>
+                <div id="rblP2">
+                    <label class="p2"><strong></strong></label>
+                    <select name="rbr2" id="rbr2">
+                                <option value="">Seleccione</option>
+                                <option value="1">Excelente</option>
+                                <option value="2">Bueno</option>
+                                <option value="3">Aceptable</option>
+                                <option value="4">Regular</option>
+                                <option value="5">Malo</option>
+                            </select>
+                </div>
+
+                <div id="rblP3">
+                    <label class="p3"><strong></strong></label>
+                    <select name="rbr3" id="rbr3">
+                                <option value="">Seleccione</option>
+                                <option value="1">Excelente</option>
+                                <option value="2">Bueno</option>
+                                <option value="3">Aceptable</option>
+                                <option value="4">Regular</option>
+                                <option value="5">Malo</option>
+                            </select>
+                </div>
+                <div id="rblP4">
+                    <label class="p4"><strong></strong></label>
+                    <select name="rbr4" id="rbr4">
+                                <option value="">Seleccione</option>
+                                <option value="1">Excelente</option>
+                                <option value="2">Bueno</option>
+                                <option value="3">Aceptable</option>
+                                <option value="4">Regular</option>
+                                <option value="5">Malo</option>
+                            </select>
+                </div>
+                <div id="rblP5">
+                    <label class="p5"><strong></strong></label>
+                    <select name="rbr5" id="rbr5">
+                                <option value="">Seleccione</option>
+                                <option value="1">Excelente</option>
+                                <option value="2">Bueno</option>
+                                <option value="3">Aceptable</option>
+                                <option value="4">Regular</option>
+                                <option value="5">Malo</option>
+                            </select>
+                </div>
+                <div id="rblP6">
+                    <label><strong>Comentarios:</strong></label>
+                    <input type="text" id="ComEvalTxt" data-clear-btn="true" />
+                    <div><br>
+                        <button data-icon="false" id="btnMan"><a href="#ReporteMant" data-transition="slide" data-ajax="false">Mantención</a></button>
+                    </div>
+                    <div id="firma">
+                        <a onclick="tipoEval = 1; $('#verFirma').click();$('#ceduEval').val('');$('#passeval').val('');" id="firbtn" data-role="button" data-mini="true" data-icon="edit">Firmar OT</a>
+                        <a href="#FirmaOT" id="verFirma" hidden></a>
+                    </div>
+                    <div id="firmaT">
+                        <a onclick="tipoEval = 2; $('#verFirma').click();$('#ceduEval').val('');$('#passeval').val('');" id="firbtnT" data-role="button" data-mini="true" data-icon="edit">Firmar Tecnica</a>
+                    </div>
+                    <hr><br>
+                    <div class="form-group">
+                        <label><strong>Firma de la Evaluación</strong></label>
+                        <br>
+                    </div>
+                    <div id="imageFirm" hidden>
+                        <label>
+                                <strong >Encargado de la Orden de Trabajo </strong><span id="respFirm"></span>
+                            </label>
+                        <label class="responFirm">
+                                <strong>Fecha y Hora de la firma: </strong><span id="dateFirm"></span>
+                            </label>
+                        <img id="firmaimg" src="" width="100%">
+                    </div>
+                    <div id="imageFirmT" hidden>
+                        <label>
+                                <strong>Responsable Tecnico quien firmo: </strong><span id="respFirmT"></span>
+                            </label>
+                        <label class="responFirmT">
+                                <strong>Fecha y Hora de la firma del Tecnico: </strong><span id="dateFirmT"></span>
+                            </label>
+                        <img id="firmaimgT" src="" width="100%">
+                    </div>
+                </div>
+            </div>
+            <!------------------------------------------ CIERRE ---------------------------------------- -->
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarEval" data-role="button" data-inline='true' onclick="guardarEvaluacion()" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div data-role="page" id="CerrarOT" data-title="Cierre Parcial OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Cierre</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <div>
+                <label><strong>N&uacute;mero de OT: </strong></label>
+                <p id="numOTCi"></p>
+                <label><strong>FF/HH Creaci&oacute;n </strong></label>
+                <p id="fecGeneracionCi"></p>
+                <label><strong>Equipo </strong></label>
+                <p id="eqCi"></p>
+                <p id="TipoOTCi" hidden></p>
+            </div>
+            <div>
+                <label><strong>Causa de Falla</strong></label>
+                <input type="text" data-type="search" id="CFC" placeholder="Causa de Falla" data-clear-btn="true" />
+                <ul id="AMCF" data-role="listview" data-filter="true" data-filter-reveal="false" class="autAMCF" data-input="#CFC">
+                </ul>
+            </div><br>
+            <label><strong>Comentarios:</strong></label><textarea id="txtcomOTC" class="textBig"></textarea>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a id="guardarCierre" data-role="button" data-inline='true' onclick="cerrar();" data-icon="check">Guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------ FIRMA DIGITAL ---------------------------------------- -->
+    <div data-role="page" id="FirmaOT" data-title="Firma Digital">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Firma</span></h1>
+        </div>
+        <div data-role="fieldcontain" id="opcionEval">
+            <label for="ceduEval"><strong>Cédula del evaluador</strong></label>
+            <input type="number" name="ceduEval" id="ceduEval" data-clear-btn="true" />
+            <br>
+            <label for="passeval"><strong>Ingrese su contraseña como evaluador</strong></label>
+            <input type="password" name="passeval" id="passeval" data-clear-btn="true" />
+        </div>
+        <button data-icon="false" id="opcionManual"><a href="#FirmaOTDedo" onclick="ponerFirma()" data-transition="slide" data-ajax="false">Firmar Manual</a></button>
+
+    </div>
+    <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+        <div data-role="navbar">
+            <ul>
+                <li><a id="verfiEval" data-role="button" data-inline='true' onclick="verificarEvaluador()" data-icon="check">Verificar</a></li>
+            </ul>
+        </div>
+    </div>
+    <!------------------------------------------ FIRMA DEDO ---------------------------------------- -->
+    <div data-role="page" id="FirmaOTDedo" data-title="Firma Digital Dedo">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a onclick="document.location.hash = '#EvaluacionOT'" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Firma Manual</span></h1>
+        </div>
+        <div data-role="content"> <br>
+            <div id="signature"></div>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a data-role="button" id="eliminar" onclick="firmar($('#signature').jSignature('getData', 'image'))" data-icon="check">guardar</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!------------------------------------------ MantencionOT ---------------------------------------- -->
+    <div data-role="page" id="ReporteMant" data-title="Mantención OT">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a onclick="document.location.hash = '';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb"> OT</span><span class="breadcrumbNo">Informe de Mantención OT</span></h1>
+        </div>
+        <div data-role="content" id="123"> <br>
+            <div class="form-group">
+                <label><h2>Limpieza de Superficies:</h2></label>
+                <br>
+            </div>
+            <div>
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza de las superficies exteriores e interiores del sistema de automuestreo. </label>
+                </div>
+                <div style="width:30%;float:left">
+                    <fieldset data-role="controlgroup" data-type="horizontal">
+                        <input type="radio" name="r1" id="radio-choice-h-1A" value="SI" checked="checked">
+                        <label for="radio-choice-h-1A">SI</label>
+                        <input type="radio" name="r1" id="radio-choice-h-1B" value="NO">
+                        <label for="radio-choice-h-1B">NO</label>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza de lector externo de códigos de barra.</label>
+                </div>
+                <div style="width:30%;float:left ">
+                    <fieldset data-role="controlgroup" data-type="horizontal">
+                        <input type="radio" name="r2" id="radio-choice-h-2A" value="SI" checked="checked">
+                        <label for="radio-choice-h-2A">SI</label>
+                        <input type="radio" name="r2" id="radio-choice-h-2B" value="NO">
+                        <label for="radio-choice-h-2B">NO</label>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza de las superficies exteriores e interiores del sistema de automuestreo. </label>
+                </div>
+                <div style="width:30%;float:left  ">
+                    <fieldset data-role="controlgroup" data-type="horizontal">
+                        <input type="radio" name="r3" id="radio-choice-h-3A" value="SI" checked="checked">
+                        <label for="radio-choice-h-3A">SI</label>
+                        <input type="radio" name="r3" id="radio-choice-h-3B" value="NO">
+                        <label for="radio-choice-h-3B">NO</label>
+                    </fieldset>
+                </div>
+            </div>
+            <div>
+                <div class="content-option">
+                    <label><h2>Mantención de los sistemas electronicos y eléctricos </h2></label>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left  ">
+                        <label textaligncenter: for="generate">Limpieza de las superficies exteriores e interiores del equipo. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r4" id="radio-choice-h-4A" value="SI" checked="checked">
+                            <label for="radio-choice-h-4A">SI</label>
+                            <input type="radio" name="r4" id="radio-choice-h-4B" value="NO">
+                            <label for="radio-choice-h-4B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div>
+                    <div class="content-option">
+                        <div style="width:70%;float:left  ">
+                            <label textaligncenter: for="generate">Eliminación de suciedad de las tarjetas electrónicas (cada 12 meses). </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r5" id="radio-choice-h-5A" value="SI" checked="checked">
+                                <label for="radio-choice-h-5A">SI</label>
+                                <input type="radio" name="r5" id="radio-choice-h-5B" value="NO">
+                                <label for="radio-choice-h-5B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza de Lectores de código de barra (incorporado y volante). </label>
+                        </div>
+                        <div style="width:30%;float:left  ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r6" id="radio-choice-h-6A" value="SI" checked="checked">
+                                <label for="radio-choice-h-6A">SI</label>
+                                <input type="radio" name="r6" id="radio-choice-h-6B" value="NO">
+                                <label for="radio-choice-h-6B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza y chequeo de todos los sensores optoacopladore. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r7" id="radio-choice-h-7A" value="SI" checked="checked">
+                                <label for="radio-choice-h-7A">SI</label>
+                                <input type="radio" name="r7" id="radio-choice-h-7B" value="NO">
+                                <label for="radio-choice-h-7B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <label><h2> Mantención del sistema del Automuestreo: </h2></label>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza de todos los sensores optoacopladores. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r8" id="radio-choice-h-8A" value="SI" checked="checked">
+                                <label for="radio-choice-h-8A">SI</label>
+                                <input type="radio" name="r8" id="radio-choice-h-8B" value="NO">
+                                <label for="radio-choice-h-8B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Chequeo, limpieza, ajuste y lubricación de todas las partes móviles. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r9" id="radio-choice-h-9A" value="SI" checked="checked">
+                                <label for="radio-choice-h-9A">SI</label>
+                                <input type="radio" name="r9" id="radio-choice-h-9B" value="NO">
+                                <label for="radio-choice-h-9B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza del lector incorporado de códigos de barra y del detector de líquido en los tubos. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r10" id="radio-choice-h-10A" value="SI" checked="checked">
+                                <label for="radio-choice-h-10A">SI</label>
+                                <input type="radio" name="r10" id="radio-choice-h-10B" value="NO">
+                                <label for="radio-choice-h-10B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Alineación del sistema de automuesteo con respecto a la aguja de toma de muestras. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r11" id="radio-choice-h-11A" value="SI" checked="checked">
+                                <label for="radio-choice-h-11A">SI</label>
+                                <input type="radio" name="r11" id="radio-choice-h-11B" value="NO">
+                                <label for="radio-choice-h-11B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+
+                        <label><h2>Mantención de los sistemas Naumáticos e hidráulicos</h2></label>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza y descontaminación profunda del interior de todos los
+                                    sistemas neumáticos e hidráulicos (tubuladuras, válvulas, jeringas, etc.). </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r12" id="radio-choice-h-12A" value="SI" checked="checked">
+                                <label for="radio-choice-h-12A">SI</label>
+                                <input type="radio" name="r12" id="radio-choice-h-12B" value="NO">
+                                <label for="radio-choice-h-12B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza manual de cámaras y aperturas. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r13" id="radio-choice-h-13A" value="SI" checked="checked">
+                                <label for="radio-choice-h-13A">SI</label>
+                                <input type="radio" name="r13" id="radio-choice-h-13B" value="NO">
+                                <label for="radio-choice-h-13B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza y descontaminación de la celda de flujo. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r14" id="radio-choice-h-14A" value="SI" checked="checked">
+                                <label for="radio-choice-h-14A">SI</label>
+                                <input type="radio" name="r14" id="radio-choice-h-14B" value="NO">
+                                <label for="radio-choice-h-14B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Desarme, limpieza y lubricación de las jeringas. </label>
+                            </div>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <fieldset data-role="controlgroup" data-type="horizontal">
+                                <input type="radio" name="r15" id="radio-choice-h-15A" value="SI" checked="checked">
+                                <label for="radio-choice-h-15A">SI</label>
+                                <input type="radio" name="r15" id="radio-choice-h-15B" value="NO">
+                                <label for="radio-choice-h-15B">NO</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación de todas las electroválvulas. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r16" id="radio-choice-h-16A" value="SI" checked="checked">
+                            <label for="radio-choice-h-16A">SI</label>
+                            <input type="radio" name="r16" id="radio-choice-h-16B" value="NO">
+                            <label for="radio-choice-h-16B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Desarme y limpieza profunda de 2 electroválvulas asociadas al
+                                desecho. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r17" id="radio-choice-h-17A" value="SI" checked="checked">
+                            <label for="radio-choice-h-17A">SI</label>
+                            <input type="radio" name="r17" id="radio-choice-h-17B" value="NO">
+                            <label for="radio-choice-h-17B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Lavado de los filtros de entrada de reactivos. Evaluar necesidad de
+                                reemplazo. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r18" id="radio-choice-h-18A" value="SI" checked="checked">
+                            <label for="radio-choice-h-18A">SI</label>
+                            <input type="radio" name="r18" id="radio-choice-h-18B" value="NO">
+                            <label for="radio-choice-h-18B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <label><h2>Mantención de partes móviles</h2></label>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Chequeo, limpieza, ajuste y lubricación de todas las partes móviles. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r19" id="radio-choice-h-19A" value="SI" checked="checked">
+                            <label for="radio-choice-h-19A">SI</label>
+                            <input type="radio" name="r19" id="radio-choice-h-19B" value="NO">
+                            <label for="radio-choice-h-19B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+
+                    <label><h2>Evaluación visual del estado de componentes.</h2></label>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Aguja de toma de muestras. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r20" id="radio-choice-h-20A" value="SI" checked="checked">
+                            <label for="radio-choice-h-20A">SI</label>
+                            <input type="radio" name="r20" id="radio-choice-h-20B" value="NO">
+                            <label for="radio-choice-h-20B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Motores y sus sistemas de transmisión de movimiento, bombas,
+                                electroválvulas, jeringas</label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r21" id="radio-choice-h-21A" value="SI" checked="checked">
+                            <label for="radio-choice-h-21A">SI</label>
+                            <input type="radio" name="r21" id="radio-choice-h-21B" value="NO">
+                            <label for="radio-choice-h-21B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Cable de poder y enchufe. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r22" id="radio-choice-h-22A" value="SI" checked="checked">
+                            <label for="radio-choice-h-22A">SI</label>
+                            <input type="radio" name="r22" id="radio-choice-h-22B" value="NO">
+                            <label for="radio-choice-h-22B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+
+                    <label><h2>Evaluación de funciones.</h2></label>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación funcional del sistema automático de toma de muestras. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r23" id="radio-choice-h-23A" value="SI" checked="checked">
+                            <label for="radio-choice-h-23A">SI</label>
+                            <input type="radio" name="r23" id="radio-choice-h-23B" value="NO">
+                            <label for="radio-choice-h-23B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación funcional del lector volante de códigos de barra. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r24" id="radio-choice-h-24A" value="SI" checked="checked">
+                            <label for="radio-choice-h-24A">SI</label>
+                            <input type="radio" name="r24" id="radio-choice-h-24B" value="NO">
+                            <label for="radio-choice-h-24B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación mediante medición de controles hematológicos, o
+                                muestras de valores conocidos. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r25" id="radio-choice-h-25A" value="SI" checked="checked">
+                            <label for="radio-choice-h-25A">SI</label>
+                            <input type="radio" name="r25" id="radio-choice-h-25B" value="NO">
+                            <label for="radio-choice-h-25B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Determinación de reproducibilidad pasando al menos 5 veces una
+                                misma muestra.</label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r26" id="radio-choice-h-26A" value="SI" checked="checked">
+                            <label for="radio-choice-h-26A">SI</label>
+                            <input type="radio" name="r26" id="radio-choice-h-26B" value="NO">
+                            <label for="radio-choice-h-26B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación funcional de los movimientos del sistema de
+                                automuestreo. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r27" id="radio-choice-h-27A" value="SI" checked="checked">
+                            <label for="radio-choice-h-27A">SI</label>
+                            <input type="radio" name="r27" id="radio-choice-h-27B" value="NO">
+                            <label for="radio-choice-h-27B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluación funcional del sistema de agitación de muestras. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <fieldset data-role="controlgroup" data-type="horizontal">
+                            <input type="radio" name="r28" id="radio-choice-h-28A" value="SI" checked="checked">
+                            <label for="radio-choice-h-28A">SI</label>
+                            <input type="radio" name="r28" id="radio-choice-h-28B" value="NO">
+                            <label for="radio-choice-h-28B">NO</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div>
+                    <label><strong>Comentarios</strong></label><textarea id="txtcomOTC" class="textsmall"></textarea>
+                    </ul>
+                </div><br>
+                <br><br><br>
+            </div>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+            <div data-role="navbar">
+                <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#EvaluacionOT">Volver</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!----------------------------------------- TODO EL INFORME ------------------------------------------------------------->
+    <div data-role="page" id="Reporte" data-title="Reporte">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <a onclick="document.location.hash = '';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb"> OT</span><span class="breadcrumbNo">Informe de Mantención OT</span></h1>
+        </div>
+        <div id="HTMLtoPDF">
+            <div align="center">
+                <IMG src="../img/Amilab.png" width="300" height="100">
+            </div>
+            <div id="contentpdf" data-role="content"> <br>
+                <div id="datosEvaluacion" data-role="fieldcontain">
+                    <div class="content-option">
+                        <h2><strong>Información del Formulario</strong></h2>
+                        <label><strong>N&uacute;mero de OT: </strong></label>
+                        <p id="RPTnumOTE"></p>
+                        <label><strong>FF/HH Creaci&oacute;n </strong></label>
+                        <p id="RPTfecGeneracionE"></p>
+                        <label><strong>Equipo </strong></label>
+                        <p id="RPTeqE"></p>
+                        <h2>Evaluación OT</h2>
+                        <label class="p1"><strong> </strong></label>
+                        <p id="RPE1"></p>
+                        <label class="p2"><strong> </strong></label>
+                        <p id="RPE2"></p>
+                        <label class="p3"><strong> </strong></label>
+                        <p id="RPE3"></p>
+                        <label class="p4"><strong> </strong></label>
+                        <p id="RPE4"></p>
+                        <label class="p5"><strong> </strong></label>
+                        <p id="RPE5"></p>
+                        <H2>Comentarios</H2>
+                        <label><strong>Comentarios Evaluador</strong></label>
+                        <p id="ComEvalTxt"></p>
+                    </div>
+                    <br>
+                    <h2>Firmas</h2>
+                    <div id="RPEimageFirm">
+                        <hr>
+                        <label>
+                        <strong >Responsable quien firmo: </strong><span id="RPErespFirm"></span>
+                    </label>
+                        <label class="RPEresponFirm">
+                        <strong>Fecha y Hora de la firma: </strong><span id="RPEdateFirm"></span>
+                    </label>
+                        <div><br><br><br>
+                            <img id="RPEfirmaimg" src="" width="100%">
+                        </div>
+                    </div>
+                    <div id="RPEimageFirmT">
+                        <hr>
+                        <label>
+                        <strong>Responsable Tecnico quien firmo: </strong><span id="RPErespFirmT"></span>
+                    </label>
+                        <label class="RPEresponFirmT">
+                        <strong>Fecha y Hora de la firma del Tecnico: </strong><span id="RPEdateFirmT"></span>
+                    </label>
+                        <div><br><br><br>
+                            <img id="RPEfirmaimgT" src="" width="100%">
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+            <div data-role="content"> <br>
+                <div class="form-group">
+                    <label><h2>Limpieza de Superficies:</h2></label>
+                    <br>
+                </div>
+                <div>
+                    <div style="width:70%;float:left">
+                        <label textaligncenter: for="generate">Limpieza superficies exteriores equipo. </label>
+                    </div>
+                    <div style="width:30%;float:left">
+                        <label id="RPTM1"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%;float:left">
+                        <label textaligncenter: for="generate">Limpieza de lector barra.</label>
+                    </div>
+                    <div style="width:30%;float:left ">
+                        <label id="RPTM2"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%;float:left">
+                        <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores automuestreo. </label>
+                    </div>
+                    <div style="width:30%;float:left  ">
+                        <label id="RPTM3"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div>
+                    <div class="content-option">
+                        <br>
+                        <h2 style="width:70%;float:left">Mantención de los sistemas electronicos y eléctricos </h2>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left  ">
+                            <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores del equipo. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM4"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="content-option">
+                            <div style="width:70%;float:left  ">
+                                <label textaligncenter: for="generate">Eliminación suciedad tarjetas electrónicas </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM5"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza Lectores de código de barra </label>
+                            </div>
+                            <div style="width:30%;float:left  ">
+                                <label id="RPTM6"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza sensores optoacopladore. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM7"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <br>
+                            <h2 style="width:70%;float:left"> Mantención del sistema del Automuestreo: </h2>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza sensores optoacopladores. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM8"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Chequeo, lubricación partes móviles. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM9"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza lector incorporado de códigos de barra y detector de líquido en los tubos. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM10"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Alineación automuestreo con respecto aguja de muestras. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM11"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <hr><br>
+                            <label><h2>Mantención de los sistemas Naumáticos e hidráulicos</h2></label>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza todos los sistemas neumáticos e hidráulicos </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM12"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza manual de cámaras y aperturas. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM13"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div class="content-option">
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza y descontaminación de la celda de flujo. </label>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM14"><strong>  </strong></label>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div style="width:70%; float:left ">
+                                    <label textaligncenter: for="generate">Limpieza y lubricación de las jeringas. </label>
+                                </div>
+                            </div>
+                            <div style="width:30%; float:left ">
+                                <label id="RPTM15"><strong>  </strong></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación de todas las electroválvulas. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM16"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Desarme y limpieza profunda de 2 electroválvulas asociadas al
+                                desecho. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM17"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Lavado de los filtros de entrada de reactivos. Evaluar necesidad de
+                                reemplazo. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM18"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <hr><br>
+                        <label><h2 style="width:70%;float:left">Mantención de partes móviles</h2></label>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Chequeo, limpieza, ajuste y lubricación de todas las partes móviles. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM19"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <hr><br>
+                        <h2 style="width:70%;float:left">Evaluación visual del estado de componentes.</h2>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Aguja de toma de muestras. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM20"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Motores y sus sistemas de transmisión de movimiento, bombas,
+                                electroválvulas, jeringas</label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM21"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Cable de poder y enchufe. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM22"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <hr><br>
+                        <h2 style="width:70%;float:left">Evaluación de funciones.</h2>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación funcional del sistema automático de toma de muestras. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM23"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación funcional del lector volante de códigos de barra. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM24"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación medición de controles hematológicos o
+                                muestras de valores conocidos. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM25"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Determinación reproducibilidad </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM26"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación funcional movimientos sistema automuestreo. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM27"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Evaluación funcional del sistema de agitación de muestras. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM28"><strong>  </strong></label>
+                        </div>
+                    </div>
+
+                    <br>
+                </div>
+            </div>
+        </div>
+        <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+            <div data-role="navbar">
+                <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#" onclick="verificarPermisoPDF()">Exportar Documento</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br><br>
+    </div>
+
+</body>
+
+</html>
