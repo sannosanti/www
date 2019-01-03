@@ -2454,10 +2454,11 @@
                     <label><strong>Comentarios:</strong></label>
                     <input type="text" id="ComEvalTxt" data-clear-btn="true" />
                     <div><br>
-                        <button data-icon="false" id="btnMan"><a href="#ReporteMant" data-transition="slide" data-ajax="false">Mantención</a></button>
+                        <a data-icon="false" id="btnMan" href="#ReporteMant" data-role="button">Encuesta de mantención</a>
                     </div>
+                    <br>
                     <div id="firma">
-                        <a onclick="tipoEval = 1; $('#verFirma').click();$('#ceduEval').val('');$('#passeval').val('');" id="firbtn" data-role="button" data-mini="true" data-icon="edit">Firmar OT</a>
+                        <a onclick="tipoEval = 1; $('#verFirma').click();$('#ceduEval').val('');$('#passeval').val('');" id="firbtn" data-role="button" data-mini="true" data-icon="edit">Firma Encargado OT</a>
                         <a href="#FirmaOT" id="verFirma" hidden></a>
                     </div>
                     <div id="firmaT">
@@ -2572,10 +2573,10 @@
     <!------------------------------------------ MantencionOT ---------------------------------------- -->
     <div data-role="page" id="ReporteMant" data-title="Mantención OT">
         <div data-role="header" data-position="fixed" data-tap-toggle="false">
-            <a onclick="document.location.hash = '';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
-            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb"> OT</span><span class="breadcrumbNo">Informe de Mantención OT</span></h1>
+            <a onclick="document.location.hash = '#EvaluacionOT';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Informe de Mantención OT</span></h1>
         </div>
-        <div data-role="content" id="123"> <br>
+        <div data-role="content" id="MantenID"> <br>
             <div class="form-group">
                 <label><h2>Limpieza de Superficies:</h2></label>
                 <br>
