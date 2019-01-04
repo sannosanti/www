@@ -1926,8 +1926,12 @@
 
 
         function verificarPermisoPDF() {
-            var permissions = cordova.plugins.permissions;
-            permissions.hasPermission(permissions.WRITE_EXTERNAL_STORAGE, checkPermissionCallbackPDF, null);
+            if (window.isphone) {
+                var permissions = cordova.plugins.permissions;
+                permissions.hasPermission(permissions.WRITE_EXTERNAL_STORAGE, checkPermissionCallbackPDF, null);
+            } else {
+                HTMLtoPDF();
+            }
         }
 
         function checkPermissionCallbackPDF(status) {
@@ -1986,7 +1990,11 @@
                     // dispose: object with X, Y of the last line add to the PDF
                     //          this allow the insertion of new lines after html
                     var pdfOutput = pdf.output();
-                    console.log(pdfOutput);
+
+                    var blob = new Blob([pdfOutput], {
+                        type: 'application/pdf'
+                    });
+                    console.log(blob);
 
                     //pc
                     if (!window.isphone) {
@@ -2009,7 +2017,8 @@
                                             fileOpener.open(fileEntry.toURL());
                                         };
                                         alert("writing to file");
-                                        writer.write(pdfOutput);
+
+                                        writer.write(blob);
                                     }, function(error) {
                                         alert(error);
                                     });
