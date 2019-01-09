@@ -12,7 +12,6 @@
     <meta charset="UTF-8">
     <script type="text/javascript" src="../cordova.js"></script>
     <script src="../js/jspdf.js"></script>
-    <script src="../js/html2canvas.min.js"></script>
     <script src="../url.js" type="text/javascript"></script>
     <script src="../general.js" type="text/javascript"></script>
     <script src="../panel.js" type="text/javascript"></script>
@@ -1966,47 +1965,74 @@
         }
 
         function HTMLtoPDF() {
-            html2canvas(document.querySelector('#HTMLtoPDF')).then(canvas => {
-                let pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298);
-                var pdfOutput = pdf.output();
+            var pdf = new jsPDF('p', 'pt', 'letter');
+            source = $('#HTMLtoPDF')[0];
+            specialElementHandlers = {
+                '#bypassme': function(element, renderer) {
+                    return true
+                }
+            }
+            margins = {
+                top: 50,
+                left: 60,
+                width: 545
+            };
+            pdf.fromHTML(
+                source // HTML string or DOM elem ref.
+                , margins.left // x coord
+                , margins.top // y coord
+                , {
+                    'width': margins.width // max width of content on PDF
+                        ,
+                    'elementHandlers': specialElementHandlers
+                },
+                function(dispose) {
+                    // dispose: object with X, Y of the last line add to the PDF
+                    //          this allow the insertion of new lines after html
+                    var pdfOutput = pdf.output();
 
-                //pc
-                if (!window.isphone) {
-                    pdf.save('html2pdf.pdf');
-                } else {
-                    //movil
-                    // segun la documentacion de fonga eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
-                    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+                    var blob = new Blob([pdfOutput], {
+                        type: 'application/pdf'
+                    });
+                    console.log(blob);
+
+                    //pc
+                    if (!window.isphone) {
+                        pdf.save('html2pdf.pdf');
+                    } else {
+                        //movil
+                        // segun la documentacion de fonga eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
+                        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
 
 
-                            fileSystem.root.getFile('html2pdf.pdf', {
-                                create: true
-                            }, function(entry) {
-                                var fileEntry = entry;
-                                alert(entry);
+                                fileSystem.root.getFile('html2pdf.pdf', {
+                                    create: true
+                                }, function(entry) {
+                                    var fileEntry = entry;
+                                    alert(entry);
 
-                                entry.createWriter(function(writer) {
-                                    writer.onwrite = function(evt) {
-                                        alert("write success");
-                                        fileOpener.open(fileEntry.toURL());
-                                    };
-                                    alert("writing to file");
+                                    entry.createWriter(function(writer) {
+                                        writer.onwrite = function(evt) {
+                                            alert("write success");
+                                            fileOpener.open(fileEntry.toURL());
+                                        };
+                                        alert("writing to file");
 
-                                    writer.write(pdfOutput);
+                                        writer.write(blob);
+                                    }, function(error) {
+                                        alert(error);
+                                    });
+
                                 }, function(error) {
                                     alert(error);
                                 });
-
-                            }, function(error) {
-                                alert(error);
+                            },
+                            function(event) {
+                                alert(evt.target.error.code);
                             });
-                        },
-                        function(event) {
-                            alert(evt.target.error.code);
-                        });
+                    }
                 }
-            });
+            )
         }
 
         /****************************** Generar Reporte    *********************************/
@@ -2474,6 +2500,7 @@
                     </div>
                 </div>
             </div>
+            <!------------------------------------------ CIERRE ---------------------------------------- -->
         </div>
         <div data-role="footer" data-id="footer" data-position="fixed">
             <div data-role="navbar">
@@ -2483,8 +2510,6 @@
             </div>
         </div>
     </div>
-
-    <!------------------------------------------ CIERRE ---------------------------------------- -->
     <div data-role="page" id="CerrarOT" data-title="Cierre Parcial OT">
         <div data-role="header" data-position="fixed" data-tap-toggle="false">
             <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
@@ -2522,6 +2547,7 @@
             <a href="#" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back" data-rel="back"></a>
             <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Firma</span></h1>
         </div>
+
         <div data-role="fieldcontain" id="opcionEval">
             <label for="ceduEval"><strong>Cédula del evaluador</strong></label>
             <input type="number" name="ceduEval" id="ceduEval" data-clear-btn="true" />
@@ -2529,15 +2555,15 @@
             <label for="passeval"><strong>Ingrese su contraseña como evaluador</strong></label>
             <input type="password" name="passeval" id="passeval" data-clear-btn="true" />
         </div>
-        <button data-icon="false" id="opcionManual"><a href="#FirmaOTDedo" onclick="ponerFirma()" data-transition="slide" data-ajax="false">Firmar Manual</a></button>
-
-
-        <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
-            <div data-role="navbar">
-                <ul>
-                    <li><a id="verfiEval" data-role="button" data-inline='true' onclick="verificarEvaluador()" data-icon="check">Verificar</a></li>
-                </ul>
-            </div>
+        <div id="opcionManual">
+            <a data-icon="false" data-role="button" href="#FirmaOTDedo" onclick="ponerFirma()" data-transition="slide" data-ajax="false">Firmar Manual</a>
+        </div>
+    </div>
+    <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
+        <div data-role="navbar">
+            <ul>
+                <li><a id="verfiEval" onclick="verificarEvaluador()" data-icon="check">Verificar</a></li>
+            </ul>
         </div>
     </div>
     <!------------------------------------------ FIRMA DEDO ---------------------------------------- -->
@@ -2552,6 +2578,7 @@
         <div data-role="footer" data-id="footer" data-position="fixed">
             <div data-role="navbar">
                 <ul>
+                    <li><a data-role="button" id="buscar" onclick="limpiarFirma()" data-icon="delete">Limpiar</a></li>
                     <li><a data-role="button" id="eliminar" onclick="firmar($('#signature').jSignature('getData', 'image'))" data-icon="check">guardar</a></li>
                 </ul>
             </div>
@@ -3052,6 +3079,7 @@
             </div>
             <div data-role="content">
                 <div class="form-group">
+                    1
                     <h2>Limpieza de Superficies:</h2>
                 </div>
                 <div>

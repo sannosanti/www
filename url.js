@@ -34,11 +34,11 @@ function checkConnection() {
     if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) { window.isphone = true; }
     if (window.isphone) {
         var networkState = navigator.connection.type;
-        uri = 'http://localhost/AmovilRest/api';
+        uri = 'http://200.116.165.6:8081/AmovilRest/api';
         if (networkState == Connection.WIFI) {} else {
             if (networkState == Connection.CELL || networkState == Connection.CELL_2G || networkState == Connection.CELL_3G ||
                 networkState == Connection.CELL_4G) {
-                uri = 'http://localhost/AmovilRest/api';
+                uri = 'http://200.116.165.6:8081/AmovilRest/api';
             } else {
                 if (networkState == Connection.NONE) {
                     navigator.notification.alert(
@@ -51,7 +51,7 @@ function checkConnection() {
             }
         }
     } else {
-        uri = 'http://localhost/AmovilRest/api';
+        uri = 'http://200.116.165.6:8081/AmovilRest/api';
     }
     //regisUFDM();
 }
