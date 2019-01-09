@@ -51,7 +51,7 @@ function checkConnection() {
             }
         }
     } else {
-        uri = 'http://200.116.165.6:8081/AmovilRest/api';
+        uri = 'http://localhost/AmovilRest/api';
     }
     //regisUFDM();
 }

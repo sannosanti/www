@@ -164,8 +164,9 @@
         <div data-role="content">
             <ul data-role="listview" data-inset="true" class="subgrupo">
                 <div data-role="fieldcontain">
-                    <label for="parametro" class="select"><strong>Buscar por:</strong></label>
-                    <select name="parametro" id="parametro">
+                    <div>
+                        <label for="parametro" class="select"><strong>Buscar por:</strong></label>
+                        <select name="parametro" id="parametro">
 						<option value="0">C&oacute;digo AC</option>
 						<option value="1">Referencia</option>
 						<option value="2">Num AF</option>
@@ -176,25 +177,28 @@
 						<option value="7">Tipo</option>
 						<option value="8">Centro de Costo</option>
 						<option value="9">Ubicaci&oacute;n F&iacute;sica</option>
-					</select>
-
-
-
-                    <div data-role="fieldcontain" id="liresp">
-                        <label for="filterable-input"><strong>Encargado</strong></label>
-                        <input type="text" data-type="search" id="filterable-input">
-                        <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                    </select>
                     </div>
-                    <div data-role="fieldcontain" id="liUF">
-                        <label for="UF"><strong>Ubicaci&oacute;n F&iacute;sica</strong></label>
-                        <input type="text" data-type="search" id="UF" />
-                        <ul id="UFlist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFs" data-input="#UF"></ul>
-                    </div>
-                    <div data-role="fieldcontain" id="liCC">
-                        <label for="CC"><strong>Centro de Costo</strong></label>
-                        <input type="text" data-type="search" id="CC" />
-                        <ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC">
-                        </ul>
+                    <div>
+                        <div data-role="collapsible" data-inset="false" data-icon="false">
+                            <h4>Filtrar por</h4>
+                            <div data-role="fieldcontain" id="liresp">
+                                <label for="filterable-input"><strong>Encargado</strong></label>
+                                <input type="text" data-type="search" id="filterable-input">
+                                <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                            </div>
+                            <div data-role="fieldcontain" id="liUF">
+                                <label for="UF"><strong>Ubicaci&oacute;n F&iacute;sica</strong></label>
+                                <input type="text" data-type="search" id="UF" />
+                                <ul id="UFlist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFs" data-input="#UF"></ul>
+                            </div>
+                            <div data-role="fieldcontain" id="liCC">
+                                <label for="CC"><strong>Centro de Costo</strong></label>
+                                <input type="text" data-type="search" id="CC" />
+                                <ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC">
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                     <div data-role="fieldcontain" id="liValor">
                         <label for="codigo"><strong>Valor</strong></label>
