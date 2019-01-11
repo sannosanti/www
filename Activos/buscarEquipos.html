@@ -19,6 +19,16 @@
         $.mobile.allowCrossDomainPages = true;
         $.mobile.pushStateEnabled = false;
 
+        $(document).on('change', '.drop-check-sub', function() {
+
+            var itemSub = $(this).attr('item-sub');
+
+            if ($(this).prop('checked')) {
+                $('div[item-sub=' + itemSub + ']').removeClass('hide');
+            } else {
+                $('div[item-sub=' + itemSub + ']').addClass('hide');
+            }
+        });
 
         $(document).on('pageinit', '#activosBuscar', function() {
             window.isphone = false;
@@ -180,26 +190,149 @@
                     </select>
                     </div>
                     <div>
-                        <div data-role="collapsible" data-inset="false" data-icon="false">
-                            <h4>Filtrar por</h4>
-                            <div data-role="fieldcontain" id="liresp">
-                                <label for="filterable-input"><strong>Encargado</strong></label>
-                                <input type="text" data-type="search" id="filterable-input">
-                                <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                        <div data-role="collapsible">
+                            <h6>Prueba</h6>
+
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2b" value="2" id="checkbox-h-2b">
+                                <label for="checkbox-h-2b">Referencia</label>
                             </div>
-                            <div data-role="fieldcontain" id="liUF">
-                                <label for="UF"><strong>Ubicaci&oacute;n F&iacute;sica</strong></label>
-                                <input type="text" data-type="search" id="UF" />
-                                <ul id="UFlist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFs" data-input="#UF"></ul>
+                            <div style="width:50%; float:right">
+
+                                <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
                             </div>
-                            <div data-role="fieldcontain" id="liCC">
-                                <label for="CC"><strong>Centro de Costo</strong></label>
-                                <input type="text" data-type="search" id="CC" />
-                                <ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC">
-                                </ul>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2c" value="2" id="checkbox-h-2c">
+                                <label for="checkbox-h-2c">Num AF</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2d" value="3" id="checkbox-h-2d">
+                                <label for="checkbox-h-2d">Encargado</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2e" value="4" id="checkbox-h-2e">
+                                <label for="checkbox-h-2e">Serial</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2f" value="5" id="checkbox-h-2f">
+                                <label for="checkbox-h-2f">Alias</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2g" value="6" id="checkbox-h-2g">
+                                <label for="checkbox-h-2g">Descripci&oacute;n</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2h" value="7" id="checkbox-h-2h">
+                                <label for="checkbox-h-2h">Tipo</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+                            <div style="width:50%; float:left">
+                                <input type="checkbox" name="checkbox-h-2i" value="8" id="checkbox-h-2i">
+                                <label for="checkbox-h-2i">Centro de Costo</label>
+                            </div>
+                            <div style="width:50%; float:right">
+                                <input type="search" data-mini="true" name="search-4" id="search-4" value="">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" class="ui-grid-a">
+                        <h5>Subrupo</h5>
+                        <div class="ui-grid-b">
+                            <div class="ui-block-a">
+                                <input type="checkbox" name="check0" value="0" id="check0" item-sub="codigo0" class="drop-check-sub" class="ui-bar ui-bar-a">
+                                <label for="check0">C&oacute;digo AC</label>
+                            </div>
+                            <div class="hide" item-sub="codigo0">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a" style="widht:70px">
+                                <input type="checkbox" name="check1" value="1" id="check1" item-sub="codigo1" class="drop-check-sub">
+                                <label for="check1">Descrip. Act</label>
+                            </div>
+                            <div class="hide" item-sub="codigo1">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check2" value="" id="check2" item-sub="codigo2" class="drop-check-sub">
+                                <label for="check2">UF</label>
+                            </div>
+                            <div class="hide" item-sub="codigo2">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check3" value="3" id="check3" item-sub="codigo3" class="drop-check-sub">
+                                <label for="check3">Número AF</label>
+                            </div>
+                            <div class="hide" item-sub="codigo3">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check4" value="4" id="check4" item-sub="codigo4" class="drop-check-sub">
+                                <label for="check4">Referencia</label>
+                            </div>
+                            <div class="hide" item-sub="codigo4">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check5" value="5" id="check5" item-sub="codigo5" class="drop-check-sub">
+                                <label for="check5">Serial</label>
+                            </div>
+                            <div class="hide" item-sub="codigo5">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check6" value="6" id="check6" item-sub="codigo6" class="drop-check-sub">
+                                <label for="check6">Reg.Invima</label>
+                            </div>
+                            <div class="hide" item-sub="codigo6">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check7" value="7" id="check7" item-sub="codigo7" class="drop-check-sub">
+                                <label for="check7">Encargado</label>
+                            </div>
+                            <div class="hide" item-sub="codigo7">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
+                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
                     <div data-role="fieldcontain" id="liValor">
                         <label for="codigo"><strong>Valor</strong></label>
                         <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
