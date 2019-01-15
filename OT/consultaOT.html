@@ -38,6 +38,16 @@
                 }
             });
         });
+        $(document).on('change', '.drop-check-sub', function() {
+
+            var itemSub = $(this).attr('item-sub');
+
+            if ($(this).prop('checked')) {
+                $('div[item-sub=' + itemSub + ']').removeClass('hide');
+            } else {
+                $('div[item-sub=' + itemSub + ']').addClass('hide');
+            }
+        });
         document.addEventListener("backbutton", function(e) {
             atras();
         }, false);
@@ -450,9 +460,105 @@
             <a href="#" onclick="atras();" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="bars"></a>
             <h1><span class="breadcrumb">AMovil</span><span class="breadcrumbNo">Consulta OT</span></h1>
         </div>
-
         <div data-role="content"><br>
             <span class="totalOTSSPA"><b style="color: #00b700">Total de Ordenes para el usuario: </b><span id="filt"></span>/<b id="otTotal"></b></span>
+            <div data-role="collapsible" class="ui-grid-a" for="parametro">
+                <h5 style="align-content: center">Subrupo</h5>
+                <div class="ui-grid-b" name="parametro" id="parametro">
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check0" value="0" id="check0" item-sub="codigo0" class="drop-check-sub">
+                        <label for="check0">Cod-Act</label>
+                    </div>
+                    <div class="hide" item-sub="codigo0">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check1" value="1" id="check1" item-sub="codigo1" class="drop-check-sub">
+                        <label for="check1">Num-AF</label>
+                    </div>
+                    <div class="hide" item-sub="codigo1">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check2" value="" id="check2" item-sub="codigo2" class="drop-check-sub">
+                        <label for="check2">Serial-Act</label>
+                    </div>
+                    <div class="hide" item-sub="codigo2">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check3" value="3" id="check3" item-sub="codigo3" class="drop-check-sub">
+                        <label for="check3">Número-OT</label>
+                    </div>
+                    <div class="hide" item-sub="codigo3">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check4" value="4" id="check4" item-sub="codigo4" class="drop-check-sub">
+                        <label for="check4">Descripción-OT</label>
+                    </div>
+                    <div class="hide" item-sub="codigo4">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check5" value="5" id="check5" item-sub="codigo5" class="drop-check-sub">
+                        <label for="check5">C.Costo-OT</label>
+                    </div>
+                    <div class="hide" item-sub="codigo5">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check6" value="6" id="check6" item-sub="codigo6" class="drop-check-sub">
+                        <label for="check6">UF-OT</label>
+                    </div>
+                    <div class="hide" item-sub="codigo6">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check7" value="7" id="check7" item-sub="codigo7" class="drop-check-sub">
+                        <label for="check7">Téc Resp OT</label>
+                    </div>
+                    <div class="hide" item-sub="codigo7">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check8" value="8" id="check8" item-sub="codigo8" class="drop-check-sub">
+                        <label for="check8">TM</label>
+                    </div>
+                    <div class="hide" item-sub="codigo8">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a">
+                            <input type="text" data-type="search" id="UF" />
+                            <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                        </div>
+                    </div>
+                    <div class="ui-block-a" class="ui-bar ui-bar-a">
+                        <input type="checkbox" name="check9" value="9" id="check9" item-sub="codigo9" class="drop-check-sub">
+                        <label for="check10">TA</label>
+                    </div>
+                    <div class="hide" item-sub="codigo9">
+                        <div class="ui-block-b" class="ui-bar ui-bar-a">
+                            <input type="text" data-type="search" id="UF" />
+                            <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div>
                 <input type="text" name="campo" id="campo" data-clear-btn="true" placeholder="Buscar" />
             </div>
@@ -469,7 +575,6 @@
             </div>
         </div>
     </div>
-
 </body>
 
 </html>
