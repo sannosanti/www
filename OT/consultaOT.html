@@ -38,6 +38,10 @@
                 }
             });
         });
+        document.addEventListener("backbutton", function(e) {
+            atras();
+        }, false);
+
         $(document).on('change', '.drop-check-sub', function() {
 
             var itemSub = $(this).attr('item-sub');
@@ -48,9 +52,6 @@
                 $('div[item-sub=' + itemSub + ']').addClass('hide');
             }
         });
-        document.addEventListener("backbutton", function(e) {
-            atras();
-        }, false);
 
         function atras() {
             localStorage.anclas = null;
@@ -101,10 +102,28 @@
             }
 
             var ajax_data = {
-                'IdeCY': localStorage.compania,
-                'usuario': usr,
-                'ot': '',
-                'filtro': localStorage.filter
+                'compania': localStorage.compania,
+                'usuario': localStorage.usuario,
+                'parametro1': $('#check0').prop("checked") ? "1" : "0", //el if simple si es true pone 1 y sino 0
+                'valor1': $('#codigo0').val(),
+                'parametro2': $('#check1').prop("checked") ? "1" : "0",
+                'valor2': $('#codigo1').val(),
+                'parametro3': $('#check2').prop("checked") ? "1" : "0",
+                'valor3': $('#codigo2').val(),
+                'parametro4': $('#check3').prop("checked") ? "1" : "0",
+                'valor4': $('#codigo3').val(),
+                'parametro5': $('#check4').prop("checked") ? "1" : "0",
+                'valor5': $('#codigo4').val(),
+                'parametro6': $('#check5').prop("checked") ? "1" : "0",
+                'valor6': $('#codigo5').val(),
+                'parametro7': $('#check6').prop("checked") ? "1" : "0",
+                'valor7': $('#CC').val(),
+                'parametro8': $('#check7').prop("checked") ? "1" : "0",
+                'valor8': $('#UF').val(),
+                'parametro9': $('#check8').prop("checked") ? "1" : "0",
+                'valor9': $('#codigo8').val(),
+                'parametro10': $('#check9').prop("checked") ? "1" : "0",
+                'valor10': $('#codigo9').val(),
             };
             $.ajax({
                 type: 'GET',
@@ -460,6 +479,7 @@
             <a href="#" onclick="atras();" data-role="button" data-iconpos='notext' class="ui-btn-left" data-icon="bars"></a>
             <h1><span class="breadcrumb">AMovil</span><span class="breadcrumbNo">Consulta OT</span></h1>
         </div>
+
         <div data-role="content"><br>
             <span class="totalOTSSPA"><b style="color: #00b700">Total de Ordenes para el usuario: </b><span id="filt"></span>/<b id="otTotal"></b></span>
             <div data-role="collapsible" class="ui-grid-a" for="parametro">
@@ -471,7 +491,7 @@
                     </div>
                     <div class="hide" item-sub="codigo0">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo0" id="codigo0" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -480,7 +500,7 @@
                     </div>
                     <div class="hide" item-sub="codigo1">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo" id="codigo1" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -489,34 +509,35 @@
                     </div>
                     <div class="hide" item-sub="codigo2">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo2" id="codigo2" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
                         <input type="checkbox" name="check3" value="3" id="check3" item-sub="codigo3" class="drop-check-sub">
-                        <label for="check3">Número-OT</label>
+                        <label for="check3">Num-OT</label>
                     </div>
                     <div class="hide" item-sub="codigo3">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo3" id="codigo3" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
                         <input type="checkbox" name="check4" value="4" id="check4" item-sub="codigo4" class="drop-check-sub">
-                        <label for="check4">Descripción-OT</label>
+                        <label for="check4">Descrip-OT</label>
                     </div>
                     <div class="hide" item-sub="codigo4">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo4" id="codigo4" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
                         <input type="checkbox" name="check5" value="5" id="check5" item-sub="codigo5" class="drop-check-sub">
-                        <label for="check5">C.Costo-OT</label>
+                        <label for="check5">C.C-OT</label>
                     </div>
                     <div class="hide" item-sub="codigo5">
-                        <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                        <div class="ui-block-b" class="ui-bar ui-bar-a">
+                            <input type="text" data-type="search" id="CC" />
+                            <ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC">
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -525,16 +546,17 @@
                     </div>
                     <div class="hide" item-sub="codigo6">
                         <div class="ui-block-b" class="ui-bar ui-bar-a">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" data-type="search" id="UF" />
+                            <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
                         <input type="checkbox" name="check7" value="7" id="check7" item-sub="codigo7" class="drop-check-sub">
-                        <label for="check7">Téc Resp OT</label>
+                        <label for="check7">Tec.Resp</label>
                     </div>
                     <div class="hide" item-sub="codigo7">
                         <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                            <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <input type="text" name="codigo7" id="codigo7" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -543,18 +565,16 @@
                     </div>
                     <div class="hide" item-sub="codigo8">
                         <div class="ui-block-b" class="ui-bar ui-bar-a">
-                            <input type="text" data-type="search" id="UF" />
-                            <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                            <input type="text" name="codigo8" id="codigo8" value="" data-clear-btn="true" />
                         </div>
                     </div>
                     <div class="ui-block-a" class="ui-bar ui-bar-a">
                         <input type="checkbox" name="check9" value="9" id="check9" item-sub="codigo9" class="drop-check-sub">
-                        <label for="check10">TA</label>
+                        <label for="check9">TA</label>
                     </div>
                     <div class="hide" item-sub="codigo9">
                         <div class="ui-block-b" class="ui-bar ui-bar-a">
-                            <input type="text" data-type="search" id="UF" />
-                            <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                            <input type="text" name="codigo9" id="codigo9" value="" data-clear-btn="true" />
                         </div>
                     </div>
                 </div>
@@ -566,6 +586,7 @@
             <ul data-role="listview" data-inset="false" data-icon="false" id="listaOT">
             </ul><br>
         </div>
+
         <div data-role="footer" data-id="footer" data-position="fixed">
             <div data-role="navbar">
                 <ul>
@@ -575,6 +596,7 @@
             </div>
         </div>
     </div>
+
 </body>
 
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="js/jquery.mobile-1.4.5/jquery.mobile-1.4.5.css">
@@ -10,16 +11,16 @@
     <link rel="stylesheet" href="css/themes/amovil.css" />
     <script type="text/javascript" src="url.js"></script>
     <script type="text/javascript">
-        $.support.cors                 = true;
+        $.support.cors = true;
         $.mobile.allowCrossDomainPages = true;
-        $.mobile.pushStateEnabled      = false;
+        $.mobile.pushStateEnabled = false;
 
-        $(document).on('pageinit','#logon', function(){
+        $(document).on('pageinit', '#logon', function() {
             window.isphone = false;
-            if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
+            if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
                 window.isphone = true;
             }
-            if(window.isphone) {
+            if (window.isphone) {
                 document.addEventListener("deviceready", cerrarSesion, false);
                 document.addEventListener("deviceready", onDeviceReady, false);
                 document.addEventListener("deviceready", checkDemo, false);
@@ -32,215 +33,244 @@
             $(".ui-input-text:nth-child(2)").prepend("<div class='user'></div>");
             $(".ui-input-text:nth-child(3)").prepend("<div class='user paswd'></div>");
 
-            $('#userName').keydown(function(event){
+            $('#userName').keydown(function(event) {
                 if (event.keyCode === 13) {
                     $('#pwd').focus();
                 }
             });
 
-            $('#pwd').keydown(function(event){
+            $('#pwd').keydown(function(event) {
                 if (event.keyCode === 13) {
                     $('#ingresar').click();
                 }
             });
         });
 
-        document.addEventListener("backbutton", function (e) {
-            if(localStorage.length === 0) {
+        document.addEventListener("backbutton", function(e) {
+            if (localStorage.length === 0) {
                 navigator.app.exitApp();
             }
         }, false);
 
-                //Verifica si es una version demo o instalacion.
-                function checkDemo(){
-                    // variable de verificacion demo
-                    var demo = false;
+        //Verifica si es una version demo o instalacion.
+        function checkDemo() {
+            // variable de verificacion demo
+            var demo = false;
 
-                    if (demo) {
-                        var ajax_data = {
-                            'key': 'WUS5L3EH9P7D',
-                            'format': 'json',
-                            'by': 'position',
-                            'lat': '6.2105423',
-                            'lng': '-75.5671974'
-                        };
-                        $.ajax({
-                            type       : 'GET',
-                            url        : 'http://api.timezonedb.com/v2/get-time-zone',
-                            crossDomain: true,
-                            beforeSend : function() {$.mobile.loading('show')},
-                            complete   : function() {$.mobile.loading('hide')},
-                            data       : ajax_data,
-                            dataType   : 'json',
-                            success    : function(response) {
+            if (demo) {
+                var ajax_data = {
+                    'key': 'WUS5L3EH9P7D',
+                    'format': 'json',
+                    'by': 'position',
+                    'lat': '6.2105423',
+                    'lng': '-75.5671974'
+                };
+                $.ajax({
+                    type: 'GET',
+                    url: 'http://api.timezonedb.com/v2/get-time-zone',
+                    crossDomain: true,
+                    beforeSend: function() {
+                        $.mobile.loading('show')
+                    },
+                    complete: function() {
+                        $.mobile.loading('hide')
+                    },
+                    data: ajax_data,
+                    dataType: 'json',
+                    success: function(response) {
 
-                                var Hoy = new Date(response.formatted);
-                                //rango de fechas del demo
-                                var fechaIni = new Date("2018-04-24 00:00");
-                                var fechaFin = new Date("2018-05-08 23:59");
+                        var Hoy = new Date(response.formatted);
+                        //rango de fechas del demo
+                        var fechaIni = new Date("2018-04-24 00:00");
+                        var fechaFin = new Date("2018-05-08 23:59");
 
-                                if (Hoy >= fechaIni && Hoy <= fechaFin) {
-                                    window.isphone = false;
-                                    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
-                                        window.isphone = true;
-                                    }
-                                    if(window.isphone) {
-                                        document.addEventListener("deviceready", cargarCompanias, false);
-                                    }else{
-                                        cargarCompanias();
-                                    }
-                                } else {
-                                    window.isphone = false;
-                                    if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
-                                        window.isphone = true;
-                                    }
-                                    if(window.isphone) {
-                                        navigator.notification.alert(
-                                            'Su versión Demo ha expirado, Comuníquese con el Administrador del sistema',
-                                            alertDismissed,
-                                            'AMovil',
-                                            'Ok'
-                                            );
-                                    } else {
-                                        alert('Su versión Demo ha expirado, Comuníquese con el administrador del sistema');
-                                    }
-                                }
-                            },
-                            error      : function(xhr, ajaxOptions, thrownError) {
-                                alert(response);
+                        if (Hoy >= fechaIni && Hoy <= fechaFin) {
+                            window.isphone = false;
+                            if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                                window.isphone = true;
                             }
-                        });
-                        
+                            if (window.isphone) {
+                                document.addEventListener("deviceready", cargarCompanias, false);
+                            } else {
+                                cargarCompanias();
+                            }
+                        } else {
+                            window.isphone = false;
+                            if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                                window.isphone = true;
+                            }
+                            if (window.isphone) {
+                                navigator.notification.alert(
+                                    'Su versión Demo ha expirado, Comuníquese con el Administrador del sistema',
+                                    alertDismissed,
+                                    'AMovil',
+                                    'Ok'
+                                );
+                            } else {
+                                alert('Su versión Demo ha expirado, Comuníquese con el administrador del sistema');
+                            }
+                        }
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert(response);
+                    }
+                });
+
+            } else {
+                window.isphone = false;
+                if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+                    window.isphone = true;
+                }
+                if (window.isphone) {
+                    document.addEventListener("deviceready", cargarCompanias, false);
+                } else {
+                    cargarCompanias();
+                }
+            }
+        }
+
+        function alertDismissed() {
+            navigator.app.exitApp();
+        }
+
+        function cargarCompanias() {
+            $.ajax({
+                type: 'GET',
+                url: uri + '/login',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.length === 1) {
+                        $('#prim').remove();
+                        $('#compa').hide();
+                    }
+                    $.each(response, function(key, item) {
+                        $('<option>', {
+                            text: item.nitcy,
+                            value: item.idecy
+                        }).appendTo($('#company'));
+                    });
+                    $('#company').selectmenu("refresh", true);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    $('#company').selectmenu("refresh", true);
+                    $("#error").show();
+                    $("#error").text("no se encuentra ninguna compa\u00f1\u00eda");
+                }
+            });
+        }
+
+        function Validar() {
+            checkConnection();
+            var ajax_data = {
+                'compania': $('#company').val(),
+                'usuario': $('#userName').val(),
+                'password': $('#pwd').val()
+            };
+            $.ajax({
+                type: 'GET',
+                url: uri + '/login',
+                crossDomain: true,
+                beforeSend: function() {
+                    $.mobile.loading('show')
+                },
+                complete: function() {
+                    $.mobile.loading('hide')
+                },
+                data: ajax_data,
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                    var x = response.split(',');
+                    if (x[0] == 'Usuario Encontrado') {
+                        //valida si no hay cookies de inicio de sesion
+                        if (typeof(Storage) !== "undefined") {
+                            localStorage.usuario = $('#userName').val();
+                            localStorage.compania = $('#company').val();
+                            localStorage.anclas = null;
+                            localStorage.filter = null;
+                            localStorage.adman = x[1];
+                        }
+                        document.location.href = 'Menu.html';
                     } else {
-                        window.isphone = false;
-                        if(document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1 ) {
-                            window.isphone = true;
-                        }
-                        if(window.isphone) {
-                            document.addEventListener("deviceready", cargarCompanias, false);
-                        }else{
-                            cargarCompanias();
-                        }
+
+                        $("#error").show();
+                        $("#error").text(x[0]);
                     }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.error(JSON.stringify(response));
+                    var x = response.split(',');
+                    $("#error").show();
+                    $("#error").text(x[0]);
                 }
-                function alertDismissed(){
-                    navigator.app.exitApp();
-                }
-                function cargarCompanias() {
-                    $.ajax({
-                        type       : 'GET',
-                        url        : uri + '/login',
-                        crossDomain: true,
-                        beforeSend : function() {$.mobile.loading('show')},
-                        complete   : function() {$.mobile.loading('hide')},
-                        dataType   : 'json',
-                        success    : function(response) {
-                            if(response.length === 1){
-                                $('#prim').remove();
-                                $('#compa').hide();
-                            }
-                            $.each(response, function (key, item) {
-                               $('<option>', { text: item.nitcy, value: item.idecy }).appendTo($('#company'));
-                           });
-                            $('#company').selectmenu("refresh", true);
-                        },
-                        error      : function(xhr, ajaxOptions, thrownError) {
-                            $('#company').selectmenu("refresh", true);
-                            $("#error").show();
-                            $("#error").text("no se encuentra ninguna compa\u00f1\u00eda");
-                        }
-                    });
-                }
+            });
+        }
 
-                function Validar() {
-                    checkConnection();
-                    var ajax_data = {'compania': $('#company').val(), 'usuario': $('#userName').val(), 'password': $('#pwd').val()};
-                    $.ajax({
-                        type       : 'GET',
-                        url        : uri + '/login',
-                        crossDomain: true,
-                        beforeSend : function() {$.mobile.loading('show')},
-                        complete   : function() {$.mobile.loading('hide')},
-                        data       : ajax_data,
-                        dataType   : 'json',
-                        success    : function(response) {
-                            console.log(response);
-                            var x = response.split(',');
-                            if (x[0] == 'Usuario Encontrado'){
-                                //valida si no hay cookies de inicio de sesion
-                                if(typeof(Storage)!=="undefined") {
-                                    localStorage.usuario= $('#userName').val();
-                                    localStorage.compania= $('#company').val();
-                                    localStorage.anclas = null;
-                                    localStorage.filter = null;
-                                    localStorage.adman = x[1];
-                                }
-                                document.location.href = 'Menu.html';
-                            }else{
-
-                                $("#error").show();
-                                $("#error").text(x[0]);
-                            }
-                        },
-                        error      : function(xhr, ajaxOptions, thrownError) {
-                            console.error(JSON.stringify(response));
-                            var x = response.split(',');
-                            $("#error").show();
-                            $("#error").text(x[0]);
-                        }
-                    });
-                }
-
-                function cerrarSesion(){
-                    if(localStorage.length !== 0) {
-                        //cordova.plugins.notification.badge.clear();
-                        checkConnection();
-                        var ajax_data = {'compania': localStorage.compania, 'usuario': localStorage.usuario};
-                        $.ajax({
-                            type       : 'GET',
-                            url        : uri + '/login',
-                            crossDomain: true,
-                            beforeSend : function() {$.mobile.loading('show')},
-                            complete   : function() {$.mobile.loading('hide')},
-                            data       : ajax_data,
-                            dataType   : 'json',
-                            success    : function(response) {
-                                localStorage.clear();
-                            },
-                            error      : function(xhr, ajaxOptions, thrownError) {
-                                console.error(JSON.stringify(response));
-                                $("#error").show();
-                                $("#error").text(response);
-                            }
-                        });
+        function cerrarSesion() {
+            if (localStorage.length !== 0) {
+                //cordova.plugins.notification.badge.clear();
+                checkConnection();
+                var ajax_data = {
+                    'compania': localStorage.compania,
+                    'usuario': localStorage.usuario
+                };
+                $.ajax({
+                    type: 'GET',
+                    url: uri + '/login',
+                    crossDomain: true,
+                    beforeSend: function() {
+                        $.mobile.loading('show')
+                    },
+                    complete: function() {
+                        $.mobile.loading('hide')
+                    },
+                    data: ajax_data,
+                    dataType: 'json',
+                    success: function(response) {
+                        localStorage.clear();
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.error(JSON.stringify(response));
+                        $("#error").show();
+                        $("#error").text(response);
                     }
-                }
+                });
+            }
+        }
+    </script>
+    <title>Amovil</title>
+</head>
 
-            </script>
-            <title>Amovil</title>
-        </head>
-        <body>
-            <div id="logon" data-role="page">
-                <div data-role="header" data-position="fixed"  data-tap-toggle="false">
-                    <div class='user logo'></div>
-                </div>
-                <div data-role="content">
-                    <div data-role="fieldcontain" id="compa">
-                        <label for="company" class="select" data-mini="true"><strong>Compa&ntilde;&iacute;a</strong></label>
-                        <select name="company" id="company"><option id="prim" value="0">Seleccione una compa&ntilde;&iacute;a</option></select>
-                    </div>
-                    <div data-role="fieldcontain">
-                        <label data-mini="true"><strong>Cuenta</strong></label>
-                        <input type="text" id="userName" name="userName" value="" data-clear-btn="true" placeholder="Usuario"/>
-                        <input type="password" id="pwd" name="pwd" value="" data-clear-btn="true" placeholder="Contrase&ntilde;a"/>
-                    </div>
-                    <div data-role="fieldcontain">
-                        <a data-role="button" data-inline='false' id="ingresar" onclick="Validar();">Ingresar</a>
-                    </div>
-                    <p id="error" hidden></p>
-
-                </div>
+<body>
+    <div id="logon" data-role="page">
+        <div data-role="header" data-position="fixed" data-tap-toggle="false">
+            <div class='user logo'></div>
+        </div>
+        <div data-role="content">
+            <div data-role="fieldcontain" id="compa">
+                <label for="company" class="select" data-mini="true"><strong>Compa&ntilde;&iacute;a</strong></label>
+                <select name="company" id="company"><option id="prim" value="0">Seleccione una compa&ntilde;&iacute;a</option></select>
             </div>
-            <div id="map"></div>
-        </body>
-        </html>
+            <div data-role="fieldcontain">
+                <label data-mini="true"><strong>Cuenta</strong></label>
+                <input type="text" id="userName" name="userName" value="" data-clear-btn="true" placeholder="Usuario" />
+                <input type="password" id="pwd" name="pwd" value="" data-clear-btn="true" placeholder="Contrase&ntilde;a" />
+            </div>
+            <div data-role="fieldcontain">
+                <a data-role="button" data-inline='false' id="ingresar" onclick="Validar();">Ingresar</a>
+            </div>
+            <p id="error" hidden></p>
+
+        </div>
+    </div>
+    <div id="map"></div>
+</body>
+
+</html>

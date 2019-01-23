@@ -111,28 +111,20 @@
         function BuscarRP() {
             checkConnection();
             $('#tblDetalleRP li').remove();
-            par = $('#parametro').val();
-            var alma = $('#alm').val();
-
-            if (par == 1) {
-                valor = $('#codigo').val();
-            }
-            if (par == 2) {
-                valor = $('#EstadoRP').val();
-            }
-            if (par == 3) {
-                valor = $('#desc').val();
-            }
-            if (par == 4) {
-                valor = $('#ref').val();
-            }
-
 
             var ajax_data = {
-                'parametro': par,
-                'codigo': valor,
                 'compania': (localStorage.compania + "," + localStorage.usuario),
-                'almacen': alma
+                'parametro1': $('#check0').prop("checked") ? "1" : "0", //el if simple si es true pone 1 y sino 0
+                'valor1': $('#alm').val(), //este val es el mismo?
+                'parametro2': $('#check1').prop("checked") ? "1" : "0", //sigue
+                'valor2': $('#codigo1').val(),
+                'parametro3': $('#check2').prop("checked") ? "1" : "0",
+                'valor3': $('#EstadoRP').val(),
+                'parametro4': $('#check3').prop("checked") ? "1" : "0",
+                'valor4': $('#codigo3').val(),
+                'parametro5': $('#check4').prop("checked") ? "1" : "0",
+                'valor5': $('#codigo4').val(),
+
             };
             $.ajax({
                 type: 'GET',
@@ -208,20 +200,20 @@
 
         <div data-role="content">
             <ul data-role="listview" data-inset="true" class="subgrupo">
-                <div data-role="fieldcontain" id="lialmacen">
-                    <label for="alm"><strong>Buscar en Almac&eacute;n</strong></label>
-                    <select name="alm" id="alm"></select>
-                </div>
+                <!--
                 <div data-role="fieldcontain">
                     <label for="parametro" class="select"><strong>Buscar por:</strong></label>
                     <select name="parametro" id="parametro">
-						<!--<option value="0">Almac&eacute;n</option>-->
+						<option value="0">Almac&eacute;n</option>
 						<option value="1">C&oacute;digo RP</strong></option>
 						<option value="2">Estado</option>
 						<option value="3">Descripci&oacute;n</option>
 						<option value="4">Referencia</option>
 					</select>
                 </div>
+                -->
+                <br>
+
                 <div data-role="collapsible" class="ui-grid-a" for="parametro">
                     <h5 style="align-content: center">Subrupo</h5>
                     <div class="ui-grid-b" name="parametro" id="parametro">
@@ -230,8 +222,9 @@
                             <label for="check0">Almacén</label>
                         </div>
                         <div class="hide" item-sub="codigo0">
-                            <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <div class="ui-field-contain" id="lialmacen" style="width: 70" float="right">
+                                <label for="alm"></strong></label>
+                                <select name="alm" id="alm"></select>
                             </div>
                         </div>
                         <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -240,29 +233,46 @@
                         </div>
                         <div class="hide" item-sub="codigo1">
                             <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                <input type="text" name="codigo1" id="codigo1" value="" data-clear-btn="true" />
                             </div>
                         </div>
                         <div class="ui-block-a" class="ui-bar ui-bar-a">
-                            <input type="checkbox" name="check2" value="" id="check2" item-sub="codigo2" class="drop-check-sub">
-                            <label for="check2">Descrip-Rep</label>
+                            <input type="checkbox" name="check2" value="2" id="check2" item-sub="codigo2" class="drop-check-sub">
+                            <label for="check2">Estado</label>
                         </div>
                         <div class="hide" item-sub="codigo2">
-                            <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                            <div class="ui-field-contain ">
+                                <label for="EstadoRP"><strong></strong></label>
+                                <select name="EstadoRP" id="EstadoRP">
+                                                <option selected value="1">Activo</option>
+                                                <option value="2">Vencido</option>
+                                                <option value="3">Excedente</option>
+                                                <option value="4">Obsoleto</option>
+                                                <option value="5">Inservible</option>
+                                            </select>
                             </div>
                         </div>
                         <div class="ui-block-a" class="ui-bar ui-bar-a">
                             <input type="checkbox" name="check3" value="3" id="check3" item-sub="codigo3" class="drop-check-sub">
-                            <label for="check3">Referencia</label>
+                            <label for="check3">Descripci&oacute;n</label>
                         </div>
                         <div class="hide" item-sub="codigo3">
                             <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                <input type="text" name="codigo3" id="codigo3" value="" data-clear-btn="true" />
+                            </div>
+                        </div>
+                        <div class="ui-block-a" class="ui-bar ui-bar-a">
+                            <input type="checkbox" name="check4" value="4" id="check4" item-sub="codigo4" class="drop-check-sub">
+                            <label for="check4">Referencia</label>
+                        </div>
+                        <div class="hide" item-sub="codigo4">
+                            <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                                <input type="text" name="codigo4" id="codigo4" value="" data-clear-btn="true" />
                             </div>
                         </div>
                     </div>
                 </div>
+                <!--
                 <div data-role="fieldcontain" id="liCodRP">
                     <label for="codigo"><strong>C&oacute;digo RP</strong></label>
                     <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
@@ -285,6 +295,7 @@
                     <label for="ref"><strong>Referencia</strong></label>
                     <input type="text" name="ref" id="ref" value="" data-clear-btn="true" />
                 </div>
+                -->
                 <h3 id="total"></h3>
             </ul><br>
             <div class='inset' hidden>

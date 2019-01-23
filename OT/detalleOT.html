@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <html>
-<meta charset="UTF-8 " />
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,7 +16,6 @@
     <script src="../panel.js" type="text/javascript"></script>
     <script type="text/javascript" src="../flashcanvas.js"></script>
     <script src="../jSignature.min.js"></script>
-    <script src="../js/html2canvas.min.js"></script>
     <title>Amovil</title>
 
     <script type="text/javascript">
@@ -1932,48 +1930,87 @@
         }
 
         function HTMLtoPDF() {
-            alert("init");
-            html2canvas(document.querySelector('#HTMLtoPDF')).then(function(canvas) {
-                alert(canvas); //parece ser las libreria
-                /*let pdf = new jsPDF('p', 'mm', 'a4'); // consultar para que hptas son los parametro que resive esta funcion
-                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298);
-                var pdfOutput = pdf.output();
+            pdf = new jsPDF('p', 'pt', 'letter');
+            source = $('#HTMLtoPDF')[0];
+            source2 = $('#HTMLtoPDF2')[0];
+            source3 = $('#HTMLtoPDF3')[0];
 
-                //pc
-                if (!window.isphone) {
-                    pdf.save('html2pdf.pdf');
-                } else {
-                    //movil
-                    // segun la documentacion de phonegap eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
-                    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
-                            fileSystem.root.getFile('html2pdf.pdf', {
-                                create: true
-                            }, function(entry) {
-                                var fileEntry = entry;
-                                alert(entry);
-
-                                entry.createWriter(function(writer) {
-                                    writer.onwrite = function(evt) {
-                                        alert("write success");
-                                        fileOpener.open(fileEntry.toURL());
-                                    };
-                                    alert("writing to file");
-
-                                    writer.write(pdfOutput);
-                                }, function(error) {
-                                    alert(error);
-                                });
-
-                            }, function(error) {
-                                alert(error);
-                            });
-                        },
-                        function(event) {
-                            alert(evt.target.error.code);
-                        });
-                }*/
+            añadirpagina(source, function() {
+                añadirpagina(source2, function() {
+                    añadirpagina(source3, function() {
+                        //pc
+                        if (!window.isphone) {
+                            pdf.save('Reporte.pdf');
+                        } else {
+                            //movil
+                            var pdfOutput = pdf.output();
+                            guardarpdf(pdfOutput);
+                        }
+                    });
+                });
             });
         }
+
+        function añadirpagina(source, fnc) {
+            specialElementHandlers = {
+                '#bypassme': function(element, renderer) {
+                    return true
+                }
+            }
+
+            margins = {
+                top: 50,
+                left: 60,
+                width: 545
+            };
+            pdf.fromHTML(
+                source // HTML string or DOM elem ref.
+                , margins.left // x coord
+                , margins.top // y coord
+                , {
+                    'width': margins.width // max width of content on PDF
+                        ,
+                    'elementHandlers': specialElementHandlers
+                },
+
+                function(dispose) {
+                    pdf.addPage();
+                    fnc();
+                }
+            );
+
+        }
+
+        function guardarpdf(file) {
+            // segun la documentacion de fonga eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+                    fileSystem.root.getFile('Reporte.pdf', {
+                        create: true
+                    }, function(entry) {
+                        var fileEntry = entry;
+                        alert(entry);
+
+                        entry.createWriter(function(writer) {
+                            writer.onwrite = function(evt) {
+                                alert("Se ha generado con éxito");
+                                fileOpener.open(fileEntry.toURL());
+                            };
+                            alert("Generando");
+                            writer.write(file);
+                        }, function(error) {
+                            alert(error);
+                        });
+
+                    }, function(error) {
+                        alert(error);
+                    });
+                },
+                function(event) {
+                    alert(evt.target.error.code);
+                });
+        }
+
+
 
         /****************************** Generar Reporte    *********************************/
 
@@ -2114,6 +2151,7 @@
                 <a href="#ActualizaFechas" data-role="button" data-mini="true" data-ajax="false" data-icon="clock">Actualizar Fechas</a>
                 <a href="#cargaArchivo" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Documentos Anexos</a>
                 <a href="#CerrarOT" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Cierre Parcial OT</a>
+                <a id="btnMan" href="#ReporteMant" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Encuesta de mantención</a>
                 <a href="#EvaluacionOT" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Evaluación OT</a>
                 <a href="#Reporte" data-role="button" data-mini="true" data-ajax="false" data-icon="edit">Generar Reporte</a>
             </div>
@@ -2404,9 +2442,7 @@
                 <div id="rblP6">
                     <label><strong>Comentarios:</strong></label>
                     <input type="text" id="ComEvalTxt" data-clear-btn="true" />
-                    <div><br>
-                        <a data-icon="false" id="btnMan" href="#ReporteMant" data-role="button">Encuesta de mantención</a>
-                    </div>
+
                     <br>
                     <div id="firma">
                         <a onclick="tipoEval = 1; $('#verFirma').click();$('#ceduEval').val('');$('#passeval').val('');" id="firbtn" data-role="button" data-mini="true" data-icon="edit">Firma Encargado OT</a>
@@ -2528,7 +2564,7 @@
     <!------------------------------------------ MantencionOT ---------------------------------------- -->
     <div data-role="page" id="ReporteMant" data-title="Mantención OT">
         <div data-role="header" data-position="fixed" data-tap-toggle="false">
-            <a onclick="document.location.hash = '#EvaluacionOT';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
+            <a onclick="document.location.hash = '';" data-role="button" data-iconpos='notext' class="back-btn" data-icon="back"></a>
             <h1><span class="breadcrumb">AMovil</span><span class="breadcrumb">Consulta OT</span><span class="breadcrumbNo">Informe de Mantención OT</span></h1>
         </div>
         <div data-role="content" id="MantenID"> <br>
@@ -2962,18 +2998,24 @@
         </div>
         <div id="HTMLtoPDF">
             <div align="center">
-                <IMG src="../img/Amilab.png" width="300" height="100">
+                <!-- <IMG src="../img/Amilab.png" width="300" height="100">-->
+                <h1>
+                    <p style="text-align: center;">
+                        <strong> AMILAB</strong>
+                    </p>
+                </h1>
             </div>
             <div id="contentpdf" data-role="content"> <br>
                 <div id="datosEvaluacion" data-role="fieldcontain">
                     <div class="content-option">
-                        <h2><strong>Información del Formulario</strong></h2>
-                        <label><strong>N&uacute;mero de OT: </strong></label>
+                        <h2><strong>Informacion del Formulario</strong></h2>
+                        <label><strong>Numero de OT: </strong></label>
                         <p id="RPTnumOTE"></p>
-                        <label><strong>FF/HH Creaci&oacute;n </strong></label>
+                        <label><strong>FF/HH Creacion </strong></label>
                         <p id="RPTfecGeneracionE"></p>
                         <label><strong>Equipo </strong></label>
                         <p id="RPTeqE"></p>
+                        <!--
                         <h2>Evaluación OT</h2>
                         <label class="p1"><strong> </strong></label>
                         <p id="RPE1"></p>
@@ -2990,6 +3032,7 @@
                         <p id="ComEvalTxt"></p>
                     </div>
                     <br>
+                    
                     <h2>Firmas</h2>
                     <div id="RPEimageFirm">
                         <hr>
@@ -3016,274 +3059,277 @@
                         </div>
                         <hr>
                     </div>
-                </div>
-            </div>
-            <div data-role="content">
-                <div class="form-group">
-
-                    <h2>Limpieza de Superficies:</h2>
-                </div>
-                <div>
-                    <div style="width:70%;float:left">
-                        <label textaligncenter: for="generate">Limpieza superficies exteriores equipo. </label>
+                    -->
                     </div>
-                    <div style="width:30%;float:left">
-                        <label id="RPTM1"><strong>  </strong></label>
-                    </div>
-                </div>
-                <div class="content-option">
-                    <div style="width:70%;float:left">
-                        <label textaligncenter: for="generate">Limpieza de lector barra.</label>
-                    </div>
-                    <div style="width:30%;float:left ">
-                        <label id="RPTM2"><strong>  </strong></label>
-                    </div>
-                </div>
-                <div class="content-option">
-                    <div style="width:70%;float:left">
-                        <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores automuestreo. </label>
-                    </div>
-                    <div style="width:30%;float:left  ">
-                        <label id="RPTM3"><strong></strong></label>
-                    </div>
-                </div>
-                <div>
-                    <div class="content-option">
-
-                        <h2 style="width:70%;float:left">Mantención de los sistemas electronicos y eléctricos </h2>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left  ">
-                            <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores del equipo. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM4"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="content-option">
-                            <div style="width:70%;float:left  ">
-                                <label textaligncenter: for="generate">Eliminación suciedad tarjetas electrónicas </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM5"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza Lectores de código de barra </label>
-                            </div>
-                            <div style="width:30%;float:left  ">
-                                <label id="RPTM6"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza sensores optoacopladore. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM7"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <br>
-                            <h2 style="width:70%;float:left"> Mantención del sistema del Automuestreo: </h2>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza sensores optoacopladores. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM8"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Chequeo, lubricación partes móviles. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM9"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza lector incorporado de códigos de barra y detector de líquido en los tubos. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM10"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Alineación automuestreo con respecto aguja de muestras. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM11"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <h2 style="width:70%;float:left">Mantención de los sistemas Naumáticos e hidráulicos</h2>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza todos los sistemas neumáticos e hidráulicos </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM12"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza manual de cámaras y aperturas. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM13"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div class="content-option">
-                            <div style="width:70%; float:left ">
-                                <label textaligncenter: for="generate">Limpieza y descontaminación de la celda de flujo. </label>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM14"><strong>  </strong></label>
-                            </div>
-                        </div>
-                        <div>
-                            <div>
-                                <div style="width:70%; float:left ">
-                                    <label textaligncenter: for="generate">Limpieza y lubricación de las jeringas. </label>
-                                </div>
-                            </div>
-                            <div style="width:30%; float:left ">
-                                <label id="RPTM15"><strong>  </strong></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación de todas las electroválvulas. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM16"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Desarme y limpieza profunda de 2 electroválvulas asociadas al
-                                desecho. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM17"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Lavado de los filtros de entrada de reactivos. Evaluar necesidad de
-                                reemplazo. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM18"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <br>
-                        <h2 style="width:70%;float:left">Mantención de partes móviles</h2>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Chequeo, limpieza, ajuste y lubricación de todas las partes móviles. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM19"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <br>
-                        <h2 style="width:70%;float:left">Evaluación visual del estado de componentes.</h2>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Aguja de toma de muestras. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM20"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Motores y sus sistemas de transmisión de movimiento, bombas,
-                                electroválvulas, jeringas</label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM21"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Cable de poder y enchufe. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM22"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <br>
-                        <h2 style="width:70%;float:left">Evaluación de funciones.</h2>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación funcional del sistema automático de toma de muestras. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM23"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación funcional del lector volante de códigos de barra. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM24"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación medición de controles hematológicos o
-                                muestras de valores conocidos. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM25"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Determinación reproducibilidad </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM26"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación funcional movimientos sistema automuestreo. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM27"><strong>  </strong></label>
-                        </div>
-                    </div>
-                    <div class="content-option">
-                        <div style="width:70%; float:left ">
-                            <label textaligncenter: for="generate">Evaluación funcional del sistema de agitación de muestras. </label>
-                        </div>
-                        <div style="width:30%; float:left ">
-                            <label id="RPTM28"><strong>  </strong></label>
-                        </div>
-                    </div>
-
-                    <br>
                 </div>
             </div>
         </div>
+        <div data-role="content" id="HTMLtoPDF2">
+            <div class="form-group">
+                <h2>Limpieza de Superficies:</h2>
+            </div>
+            <div>
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza superficies exteriores equipo. </label>
+                </div>
+                <div style="width:30%;float:left">
+                    <label id="RPTM1"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza de lector barra.</label>
+                </div>
+                <div style="width:30%;float:left ">
+                    <label id="RPTM2"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%;float:left">
+                    <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores automuestreo. </label>
+                </div>
+                <div style="width:30%;float:left  ">
+                    <label id="RPTM3"><strong></strong></label>
+                </div>
+            </div>
+            <div>
+                <div class="content-option">
+
+                    <h2 style="width:70%;float:left">Mantencion de los sistemas electronicos y electricos </h2>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left  ">
+                        <label textaligncenter: for="generate">Limpieza superficies exteriores e interiores del equipo. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <label id="RPTM4"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div>
+                    <div class="content-option">
+                        <div style="width:70%;float:left  ">
+                            <label textaligncenter: for="generate">Eliminacion suciedad tarjetas electronicas </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM5"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza Lectores de codigo de barra </label>
+                        </div>
+                        <div style="width:30%;float:left  ">
+                            <label id="RPTM6"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza sensores optoacopladore. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM7"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <br>
+                        <h2 style="width:70%;float:left"> Mantencion del sistema del Automuestreo: </h2>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza sensores optoacopladores. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM8"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Chequeo, lubricacion partes moviles. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM9"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza lector incorporado de codigos de barra y detector de liquido en los tubos. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM10"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Alineacion automuestreo con respecto aguja de muestras. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM11"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <h2 style="width:70%;float:left">Mantencion de los sistemas Naumaticos e hidraulicos</h2>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza todos los sistemas neumaticos e hidraulicos </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM12"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza manual de camaras y aperturas. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM13"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div class="content-option">
+                        <div style="width:70%; float:left ">
+                            <label textaligncenter: for="generate">Limpieza y descontaminacion de la celda de flujo. </label>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM14"><strong>  </strong></label>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <div style="width:70%; float:left ">
+                                <label textaligncenter: for="generate">Limpieza y lubricacion de las jeringas. </label>
+                            </div>
+                        </div>
+                        <div style="width:30%; float:left ">
+                            <label id="RPTM15"><strong>  </strong></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Evaluacion de todas las electrovalvulas. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <label id="RPTM16"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Desarme y limpieza profunda de 2 electrovalvulas asociadas al
+                                desecho. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <label id="RPTM17"><strong>  </strong></label>
+                    </div>
+                </div>
+                <div class="content-option">
+                    <div style="width:70%; float:left ">
+                        <label textaligncenter: for="generate">Lavado de los filtros de entrada de reactivos. Evaluar necesidad de
+                                reemplazo. </label>
+                    </div>
+                    <div style="width:30%; float:left ">
+                        <label id="RPTM18"><strong>  </strong></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-role="content" id="HTMLtoPDF3">
+            <div class="content-option">
+                <br><br>
+                <h2 style="width:70%;float:left">Mantencion de partes moviles</h2>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Chequeo, limpieza, ajuste y lubricacion de todas las partes moviles. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM19"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <br>
+                <h2 style="width:70%;float:left">Evaluacion visual del estado de componentes.</h2>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Aguja de toma de muestras. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM20"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Motores y sus sistemas de transmision de movimiento, bombas,
+                                electrovalvulas, jeringas</label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM21"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Cable de poder y enchufe. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM22"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <br>
+                <h2 style="width:70%;float:left">Evaluacion de funciones</h2>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Evaluacion funcional del sistema automatico de toma de muestras. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM23"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Evaluacion funcional del lector volante de codigos de barra. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM24"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Evaluacion medicion de controles hematologicos o
+                                muestras de valores conocidos. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM25"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Determinacion reproducibilidad </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM26"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Evaluacion funcional movimientos sistema automuestreo. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM27"><strong>  </strong></label>
+                </div>
+            </div>
+            <div class="content-option">
+                <div style="width:70%; float:left ">
+                    <label textaligncenter: for="generate">Evaluacion funcional del sistema de agitacion de muestras. </label>
+                </div>
+                <div style="width:30%; float:left ">
+                    <label id="RPTM28"><strong>  </strong></label>
+                </div>
+            </div>
+            <br>
+        </div>
+
         <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
             <div data-role="navbar">
                 <div data-role="footer" data-id="footer" data-position="fixed" id="footerEval">
@@ -3295,9 +3341,8 @@
                 </div>
             </div>
         </div>
-        <br><br>
     </div>
-
+    <br><br>
 </body>
 
 </html>

@@ -55,41 +55,10 @@
         }
 
         function cargaActivosBuscar() {
-            $('#liresp').hide();
-            $('#liUF').hide();
-            $('#liCC').hide();
-            $('#liValor').hide();
-            $('#parametro').change();
+            cargarResponsables();
+            cargarUF();
+            cargarCC();
         }
-
-        $(document).on('change', '#parametro', function(e) {
-            $("#liresp").hide();
-            $("#liUF").hide();
-            $("#liCC").hide();
-            $("#liValor").hide();
-
-            $("#filterable-input").val('');
-            $("#UF").val('');
-            $("#CC").val('');
-
-            var opcion = $('#parametro :checked').val();
-            if (opcion == 6) {
-                $("#liresp").show();
-                cargarResponsables();
-            } else {
-                if (opcion == 9) {
-                    $("#liUF").show();
-                    cargarUF();
-                } else {
-                    if (opcion == 8) {
-                        $("#liCC").show();
-                        cargarCC();
-                    } else {
-                        $("#liValor").show();
-                    }
-                }
-            }
-        });
 
         $(document).on('change', '#filt', function(e) {
             var opcion = $('#filt :selected').val();
@@ -174,21 +143,6 @@
         <div data-role="content">
             <ul data-role="listview" data-inset="true" class="subgrupo">
                 <div data-role="fieldcontain">
-                    <div class="hide">
-                        <label for="parametro" class="select"><strong>Buscar por:</strong></label>
-                        <select name="parametro" id="parametro">  
-						<option value="0">C&oacute;digo AC</option>
-						<option value="1">Referencia</option>
-						<option value="2">Num AF</option>
-						<option value="3">Serial</option>
-						<option value="4">Alias</option>
-						<option value="5">Descripci&oacute;n</option>
-						<option value="6">Encargado</option>
-						<option value="7">Registro Invima</option>
-						<option value="8">Centro de Costo</option>
-						<option value="9">Ubicaci&oacute;n F&iacute;sica</option>
-                    </select>
-                    </div>
                     <div data-role="collapsible" class="ui-grid-a" for="parametro">
                         <h5 style="align-content: center">Subrupo</h5>
                         <div class="ui-grid-b" name="parametro" id="parametro">
@@ -198,7 +152,7 @@
                             </div>
                             <div class="hide" item-sub="codigo0">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo0" id="codigo0" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -207,7 +161,7 @@
                             </div>
                             <div class="hide" item-sub="codigo1">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo1" id="codigo1" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -216,7 +170,7 @@
                             </div>
                             <div class="hide" item-sub="codigo2">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo2" id="codigo2" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -225,7 +179,7 @@
                             </div>
                             <div class="hide" item-sub="codigo3">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo3" id="codigo3" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -234,7 +188,7 @@
                             </div>
                             <div class="hide" item-sub="codigo4">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo4" id="codigo4" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -243,7 +197,7 @@
                             </div>
                             <div class="hide" item-sub="codigo5">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo5" id="codigo5" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -261,7 +215,7 @@
                                 <label for="check8">C.Costo</label>
                             </div>
                             <div class="hide" item-sub="codigo8">
-                                <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a">
                                     <input type="text" data-type="search" id="CC" />
                                     <ul id="ccostolist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteCCs" data-input="#CC">
                                 </div>
@@ -274,7 +228,7 @@
                             <div class="hide" item-sub="codigo9">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a">
                                     <input type="text" data-type="search" id="UF" />
-                                    <ul id="Responsable" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocomplete" data-input="#filterable-input"></ul>
+                                    <ul id="UFlist" data-role="listview" data-filter="true" data-filter-reveal="false" class="autocompleteUFs" data-input="#UF"></ul>
                                 </div>
                             </div>
                             <div class="ui-block-a" class="ui-bar ui-bar-a">
@@ -283,12 +237,21 @@
                             </div>
                             <div class="hide" item-sub="codigo7">
                                 <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
-                                    <input type="text" name="codigo" id="codigo" value="" data-clear-btn="true" />
+                                    <input type="text" name="codigo7" id="codigo7" value="" data-clear-btn="true" />
+                                </div>
+                            </div>
+                            <div class="ui-block-a" class="ui-bar ui-bar-a">
+                                <input type="checkbox" name="check10" value="10" id="check10" item-sub="codigo10" class="drop-check-sub">
+                                <label for="check10"></label>
+                            </div>
+                            <div class="hide" item-sub="codigo10">
+                                <div class="ui-block-b" class="ui-bar ui-bar-a" id="liValor">
+                                    <input type="text" name="codigo10" id="codigo10" value="" data-clear-btn="true" />
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    <!--
                     <div data-role="fieldcontain" id="liresp">
                         <label for="filterable-input"><strong>Encargado</strong></label>
                         <input type="text" data-type="search" id="filterable-input">
@@ -316,6 +279,7 @@
                           <option value="1">Código Activo Fijo</option>
                       </select>
                     </div>
+                    -->
                     <h3 id="total"></h3>
                     </ul><br>
                     <div class='inset' hidden>

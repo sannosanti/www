@@ -379,7 +379,7 @@ center #buscar {
 }
 
 .subgrupo {
-    background-color: rgba(15, 189, 123, 0.55) !important;
+    background-color: rgb(164, 234, 185) !important;
     padding: 1px 16px !important;
     margin: 0em -15px !important;
 }
@@ -465,4 +465,87 @@ center #buscar {
     text-align: center;
     white-space: normal;
     z-index: 2;
+    font-weight: 900;
 }
+
+.ui-collapsible-inset.ui-collapsible-themed-content .ui-collapsible-content {
+    border-left-width: 1px;
+    border-right-width: 1px;
+    background-color: rgb(248, 248, 248) !important;
+    text-align: center;
+}
+
+.ui-collapsible-inset .ui-collapsible-heading .ui-btn {
+    border-right-width: 1px;
+    border-left-width: 1px;
+    text-align: center;
+}
+
+
+/*
+    var pdf=new jsPDF('p',
+    'pt',
+    'letter');
+    source=$('#HTMLtoPDF')[0];
+    specialElementHandlers= {
+        '#bypassme': function(element,
+        renderer) {
+            return true
+        }
+    }
+    
+    margins= {
+        top: 50, left: 60, width: 545
+    }
+    
+    ;
+    
+    pdf.fromHTML(
+        source // HTML string or DOM elem ref.
+        , margins.left // x coord
+        , margins.top // y coord
+        , {
+            'width': margins.width // max width of content on PDF
+                ,
+            'elementHandlers': specialElementHandlers
+        },
+        function(dispose) {
+            // dispose: object with X, Y of the last line add to the PDF
+            //          this allow the insertion of new lines after html
+            var pdfOutput = pdf.output();
+
+            //pc
+            if (!window.isphone) {
+                pdf.save('html2pdf.pdf');
+            } else {
+                //movil
+                // segun la documentacion de fonga eto en el celular es decargas dejalo, para guiarme (LocalFileSystem.PERSISTENT, 0)
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+                        fileSystem.root.getFile('asdsad.pdf', {
+                            create: true
+                        }, function(entry) {
+                            var fileEntry = entry;
+
+                            entry.createWriter(function(writer) {
+                                writer.onwrite = function(evt) {
+                                    fileOpener.open(fileEntry.toURL());
+                                };
+                                alert("archivo pdf descargado");
+                                verificarPermisoDes('FirmaDeOT' + $_GET("anoot") + '-' + $_GET("numot") + '.jpg');
+                                verificarPermisoDes('FirmaDeOT' + $_GET("anoot") + '-' + $_GET("numot") + '_Tecnico.jpg');
+                                writer.write(pdfOutput);
+                            }, function(error) {
+                                alert(error);
+                            });
+
+                        }, function(error) {
+                            alert(error);
+                        });
+                    },
+                    function(event) {
+                        alert(evt.target.error.code);
+                    });
+            }
+        }
+    )
+    */
